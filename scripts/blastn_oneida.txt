@@ -1,0 +1,19 @@
+# Copy the nucleotide and taxonomic database to workdir
+cp /shared_data/genome_db/BLAST_NCBI/nt* /workdir/kja68
+cp /shared_data/genome_db/BLAST_NCBI/taxdb.* /workdir/kja68
+
+# output format 7
+blastn -query uniqueSeqs.nochim.fasta -db nt -outfmt '7 qseqid saccver pident evalue qstart qend length sscinames staxids' -evalue 1e-3 -max_target_seqs 5 -num_threads 40 -out blstn_nonchim_fmt7_Oneida_staxids.txt
+
+# output format 5 (input for MEGAN)
+blastn -query uniqueSeqs.nochim.fasta -db nt -outfmt 5 -evalue 1e-5 -max_target_seqs 5 -max_hsps 5 -num_threads 40 -out blstn_nonchim_fmt5_Oneida.txt
+
+# output format 10 with entire sequence and taxonomic ID
+blastn -query uniqueSeqs.nochim.fasta -db nt -outfmt '10 qseqid pident evalue qstart qend length sscinames scomnames sseq staxids' -evalue 1e-5 -max_target_seqs 5 -max_hsps 5 -num_threads 40 -out blstn_nonchim_fmt10_scinames_Oneida_withseq.csv
+
+# match staxids to taxonomic information: copy taxonomic database, copy perl script, make file of qseqid and staxids, run script
+cp -a /home/kja68/Peru_metabarcoding/taxdump /workdir/kja68/
+cp /home/kja68/Peru_metabarcoding/tax_trace.pl /workdir/kja68/
+cut -d "," -f1,10 blstn_nonchim_fmt10_scinames_Oneida_withseq.csv > taxid.txt
+sed 's/,/\t/g' taxid.txt >> taxids.txt
+perl tax_trace.pl taxdump/nodes.dmp taxdump/names.dmp taxids.txt taxids_export.txt
