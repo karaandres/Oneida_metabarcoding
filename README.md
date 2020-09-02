@@ -45,12 +45,11 @@ In this project, we test the effectiveness of using environmental DNA (eDNA) app
      - Output files: 
        - [blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv](datasets/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv)
        - [ASV_count_by_sites.csv](datasets/ASV_count_by_sites.csv)
-       - [eDNA_counts_pident_98_inc_blanks.csv](datasets/eDNA_counts_pident_98_inc_blanks.csv)
 
   6. Data filtering
-     - Removed ASVs with low read counts and non-target taxa
-     - Scripts:
-     - Output files:
+     - Removed ASVs with low read counts, removed non-target taxa, and adjusted reads to account for false positives in conrol samples
+     - Script: [data_filtering_oneida.R](scripts/data_filtering_oneida.R)
+     - Output file: [sp_read_count_by_site.csv](datasets/sp_read_count_by_site.csv)
 
   7. Diversity metrics and site comparisons
      - Scripts:
