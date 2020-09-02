@@ -29,7 +29,6 @@ In this project, we test the effectiveness of using environmental DNA (eDNA) app
      - Reads remaining after trimming spacers and adaptors: 94717624
      
   3. Quality control (MultiQC)
-     - Script: [multiqc.sh](scripts/multiqc.sh)
     
   4. Denoising and error removal (DADA2)
      - Script: [dada2_oneida_metabarcoding.txt](scripts/dada2_oneida_metabarcoding.txt)
