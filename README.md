@@ -21,7 +21,7 @@ In this project, we test the effectiveness of using environmental DNA (eDNA) app
   1. Trim heterogeneity spacers: [Trimming_HS_Metagenomics](https://github.com/noushing/Trimming_HS_Metagenomics)
      - Scripts: 
        - [Trimming_HS_Primers.pl](scripts/Trimming_HS_Primers.pl)
-       - forward reads: [Running_Script_R1.sh](scripts/Running_Script_R1)
+       - forward reads: [Running_Script_R1.sh](scripts/Running_Script_R1.sh)
        - reverse reads: [Running_Script_R2.sh](scripts/Running_Script_R2.sh)
 
   2. Trim adaptors: Trimmomatic
