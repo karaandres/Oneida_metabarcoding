@@ -19,30 +19,33 @@ In this project, we test the effectiveness of using environmental DNA (eDNA) app
 
 **Analysis:**
   1. Trim heterogeneity spacers: [Trimming_HS_Metagenomics](https://github.com/noushing/Trimming_HS_Metagenomics)
-     - Scripts: [Trimming_HS_Primers.pl](Trimming_HS_Primers.pl), forward reads: [Running_Script_R1.sh](Running_Script_R1), reverse reads: [Running_Script_R2.sh](Running_Script_R2.sh)
+     - Scripts: 
+       - [Trimming_HS_Primers.pl](scripts/Trimming_HS_Primers.pl)
+       - forward reads: [Running_Script_R1.sh](scripts/Running_Script_R1)
+       - reverse reads: [Running_Script_R2.sh](scripts/Running_Script_R2.sh)
 
   2. Trim adaptors: Trimmomatic
-     - Script: [trimmomatic_oneida.sh](trimmomatic_oneida.sh)
+     - Script: [trimmomatic_oneida.sh](scripts/trimmomatic_oneida.sh)
      - Reads remaining after trimming spacers and adaptors: 94717624
      
   3. Quality control (MultiQC)
-     - Script: [multiqc.sh](multiqc.sh)
+     - Script: [multiqc.sh](scripts/multiqc.sh)
     
   4. Denoising and error removal (DADA2)
-     - Script: [dada2_oneida_metabarcoding.txt](dada2_oneida_metabarcoding.txt)
-     - Output files: [seqtab.nochim.csv](seqtab.nochim.csv)
+     - Script: [dada2_oneida_metabarcoding.txt](scripts/dada2_oneida_metabarcoding.txt)
+     - Output files: [seqtab.nochim.csv](datasets/seqtab.nochim.csv)
 
   5. Assign taxonomic information to ASVs (BLASTn)
      - Used BLAST and [tax_trace.pl](https://github.com/theo-allnutt-bioinformatics/scripts/blob/master/tax_trace.pl) to obtain higher taxonomic information for top 5 BLAST hits
      - Assigned species to ASV when top species hit was > 98% identity. Ambiguous hits or hits not exceedning 98% identity were assigned higher taxonomic information. 
      - Scripts: 
-       - [blastn_oneida.txt](blastn_oneida.txt)
-       - [assigning_higher_taxonomic_info.R](assigning_higher_taxonomic_info.R)
-       - [ASV_to_spp.R](ASV_to_spp.R)
+       - [blastn_oneida.txt](scripts/blastn_oneida.txt)
+       - [assigning_higher_taxonomic_info.R](scripts/assigning_higher_taxonomic_info.R)
+       - [ASV_to_spp.R](scripts/ASV_to_spp.R)
      - Output files: 
-       - [blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv](blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv)
-       - [ASV_count_by_sites.csv](ASV_count_by_sites.csv)
-       - [sp_count_by_site.csv](sp_count_by_site.csv)
+       - [blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv](datasets/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv)
+       - [ASV_count_by_sites.csv](datasets/ASV_count_by_sites.csv)
+       - [sp_count_by_site.csv](datasets/sp_count_by_site.csv)
 
   6. Data filtering
      - Removed ASVs with low read counts and non-target taxa
