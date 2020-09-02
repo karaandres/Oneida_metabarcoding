@@ -50,11 +50,15 @@ In this project, we test the effectiveness of using environmental DNA (eDNA) app
      - Script: [data_filtering_oneida.R](scripts/data_filtering_oneida.R)
      - Output file: [sp_read_count_by_site.csv](datasets/sp_read_count_by_site.csv)
 
-  7. Diversity metrics and site comparisons
+  7. Comparison to species list
+     - Compare species matches to traditional sampling techniques
      - Scripts:
      - Output files:
 
-  8. Comparison to species list
-     - Compare species matches to traditional sampling techniques
+  8. Presence-absence site comparisons
+     - Scripts:
+     - Output files:
+     
+  9. Abundance metrics and site comparisons
      - Scripts:
      - Output files:
