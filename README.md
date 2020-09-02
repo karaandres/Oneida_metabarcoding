@@ -40,7 +40,7 @@ In this project, we test the effectiveness of using environmental DNA (eDNA) app
      - Scripts: 
        - [blastn_oneida.txt](scripts/blastn_oneida.txt)
        - [assigning_higher_taxonomic_info.R](scripts/assigning_higher_taxonomic_info.R)
-       - [ASV_to_spp.R](scripts/ASV_to_spp.R)
+       - [ASV_to_spp_oneida.R](scripts/ASV_to_spp_oneida.R)
      - Output files: 
        - [blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv](datasets/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv)
        - [ASV_count_by_sites.csv](datasets/ASV_count_by_sites.csv)
