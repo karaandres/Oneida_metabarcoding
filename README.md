@@ -36,19 +36,19 @@ In this project, we test the effectiveness of using environmental DNA (eDNA) app
 
   5. Assign taxonomic information to ASVs (BLASTn)
      - Used BLAST and [tax_trace.pl](https://github.com/theo-allnutt-bioinformatics/scripts/blob/master/tax_trace.pl) to obtain higher taxonomic information for top 5 BLAST hits
-     - Assigned species to ASV when top species hit was > 98% identity. Ambiguous hits or hits not exceedning 98% identity were assigned higher taxonomic information. 
-     - Scripts: 
        - [blastn_oneida.txt](scripts/blastn_oneida.txt)
-       - [assigning_higher_taxonomic_info.R](scripts/assigning_higher_taxonomic_info.R)
-       - [ASV_to_spp_oneida.R](scripts/ASV_to_spp_oneida.R)
-     - Output files: 
-       - [blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv](datasets/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv)
-       - [ASV_count_by_sites.csv](datasets/ASV_count_by_sites.csv)
+     - Selected taxonomic information of interest and rearranged in workable format 
+       - Script: [assigning_higher_taxonomic_info.R](scripts/assigning_higher_taxonomic_info.R)
+       - Output file: - [blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv](datasets/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv)
+     - Assigned species to ASV when top species hit is >= 98% identity. Ambiguous hits or hits not exceeding 98% identity were assigned higher taxonomic information. Taxonomic assignments were added to the matrix of read counts of ASVs per site.
+       - Script: [ASV_to_spp_oneida.R](scripts/ASV_to_spp_oneida.R)
+       - Output file: [ASV_count_by_sites.csv](datasets/ASV_count_by_sites.csv)
 
   6. Data filtering
-     - Removed ASVs with low read counts, removed non-target taxa, and adjusted reads to account for false positives in conrol samples
-     - Script: [data_filtering_oneida.R](scripts/data_filtering_oneida.R)
-     - Output file: [sp_read_count_by_site.csv](datasets/sp_read_count_by_site.csv)
+     - Removed ASVs with low read counts (<0.1% of all reads in a sample), removed non-target taxa, and adjusted reads to account for false positives in control samples (removed ASVs with read counts < the mean number of non-zero reads across all negative controls)
+     - Removed negative control samples and collapsed ASV read counts per site by species
+       - Script: [data_filtering_oneida.R](scripts/data_filtering_oneida.R)
+       - Output file: [sp_read_count_by_site.csv](datasets/sp_read_count_by_site.csv)
 
   7. Comparison to species list
      - Compare species matches to traditional sampling techniques
