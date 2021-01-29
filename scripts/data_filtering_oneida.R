@@ -6,7 +6,7 @@
 ### Created 4.1.2020 by Kara Andres, updated 9.1.2020
 
 # Read in ASV counts by sites: columns are samples, rows are ASVs, taxonomic information in last columns
-ASV_count_by_sites <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/ASV_count_by_sites.csv")
+ASV_count_by_sites <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/ASV_count_by_sites.csv")
 ASV_count_by_sites <- subset(ASV_count_by_sites, select=-ASV) # remove unneeded columns
 
 ### Remove ASVs with reads below threshold of 0.1% of all reads in a sample ###
@@ -80,8 +80,9 @@ for (i in 1:nrow(ASV_count_by_sites_cleaned)){ # for each ASV
 # write.csv(sp_count_by_site, "/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/sp_read_count_by_site.csv") # read counts per site by species excluding blanks
 library(dplyr)
 sp_count_by_site <- ASV_count_by_sites_lowest_tax %>% 
-  group_by(scomnames) %>% 
+  group_by(species) %>% 
   summarise(across(where(is.numeric), sum)) %>%
-  left_join(distinct(ASV_count_by_sites_lowest_tax[, c("family", "genus", "species", "scomnames")], scomnames,.keep_all = TRUE)) %>%
-  select(c(family, genus, species), everything())
-# write.csv(sp_count_by_site, "/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/sp_read_count_by_site.csv", row.names=FALSE) # read counts per site by species excluding blanks
+  left_join(distinct(ASV_count_by_sites_lowest_tax[, c("family", "genus", "species", "scomnames")], species,.keep_all = TRUE)) %>%
+  select(c(family, genus, scomnames), everything()) %>%
+  arrange(scomnames)
+# write.csv(sp_count_by_site, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/sp_read_count_by_site.csv", row.names=FALSE) # read counts per site by species excluding blanks
