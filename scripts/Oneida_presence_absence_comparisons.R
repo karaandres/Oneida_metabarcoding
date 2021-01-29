@@ -8,6 +8,7 @@ historical_species_dataset <- read.csv("/Users/kbja10/Github/Oneida_metabarcodin
 
 # Reconcile inconsistencies in species names across datasets 
 library(dplyr)
+library(tidyr)
 # electrofishing dataset
 to_replace <- c("\\.","chubsucker","gizzard shad","killifish","lepomis","pumpkinseedXgreen.sunfish","redhorse","unknown shiner")
 replace_with <- c(" ","creek chubsucker","American gizzard shad","banded killifish","Lepomis.1","Lepomis.2","Moxostoma","Notropis")
@@ -27,10 +28,9 @@ library(RColorBrewer)
 library(stringr)
 
 # species lists from 3 datasets
-hist_spp <- as.character(historical_species_dataset$historical)
+hist_spp <- as.character(historical_species_dataset$scomnames)
 ef_spp <- as.character(colnames(oneida_ef[-1])) 
 eDNA_spp <- as.character(sp_read_count_by_site$scomnames)
-
 
 # Make Venn diagram
 myCol <- brewer.pal(3, "Pastel2")
@@ -38,7 +38,21 @@ venn.diagram(x = list(ef_spp, hist_spp, eDNA_spp),
              category.names = c("Electrofishing" , "Historical" , "eDNA"),
              filename = '/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/venn_diagramm_1.28.png', output=TRUE,
              imagetype="png" , height = 3000, width = 3000, resolution = 300, lwd = 2, lty = 'blank', 
-             fill = myCol, cex = 4, cat.cex = 2, fontface = "bold", fontfamily = "sans")
+             fill = myCol, cex = 4, cat.cex = 2, fontface = "bold", fontfamily = "sans", cat.dist=0.05)
+
+# Make a table of species lists 
+sp_lists <- data.frame(rbind(data.frame(scomnames=hist_spp,source=rep("historical",length(hist_spp))),
+                             data.frame(scomnames=ef_spp,source=rep("electrofishing",length(ef_spp))),
+                             data.frame(scomnames=eDNA_spp,source=rep("eDNA",length(eDNA_spp)))))
+sp_lists_comparison <- sp_lists %>% 
+  mutate(present = 1) %>% # create a dummy column
+  pivot_wider(names_from = source, values_from = present) %>% # turn 'source' column into 'historical','electrofishing','eDNA'
+  mutate_at(vars(historical, electrofishing, eDNA), ~ifelse(is.na(.), 0, 1)) %>% # 1 if present, 0 if not
+  left_join(historical_species_dataset[,c("scomnames","species")], by="scomnames",.keep_all = TRUE) %>%
+  select(species, everything()) %>%
+  arrange(desc(historical), desc(electrofishing), desc(eDNA))
+# write.csv(sp_lists_comparison, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/sp_lists_comparison.csv", row.names=FALSE) # read counts per site by species excluding blanks
+
 
 ############# Part 2: Species accumulation curves ##########################
 library(vegan)
@@ -56,14 +70,14 @@ plot(sp_acc_ef, ci.type="poly", col="#009E73", lwd=3, ci.lty=0, ci.col=alpha("gr
 legend(1, 60, legend=c("eDNA samples", "Electrofishing survey"), col=c("#56B4E9","#009E73"), lty=c(3,1), lwd=3, cex=1.2)
 # dev.off()
 
-################# Part 3: Site occupancy -- eDNA vs. EF comparison ################################
-# Site occupancy (proportion of sites species is detected)
+################# Part 3: Habitat comparison -- eDNA vs. EF comparison ################################
 # Collapse reads/species counts by site (triplicate eDNA samples/multiple EF passes)
 library(dplyr)
 oneida_ef$Site <- gsub(" [[:digit:]]+", "", oneida_ef$Site) # remove pass number 
 oneida_ef_sites <- oneida_ef %>% 
   group_by(Site) %>% 
-  summarise(across(where(is.numeric), sum))
+  summarise(across(where(is.numeric), sum)) %>%
+  pivot_wider(names_from = Site, values_from = price)
 
 sp_read_count_sites <- data.frame(sp_read_count_by_site[,1:4], midlake_Buoy113=sp_read_count_by_site$X1G, nearshore_WilsonPoint=sp_read_count_by_site$X2G,
                                   nearshore_SouthBay_EF=sp_read_count_by_site$X3G+sp_read_count_by_site$X5G,
