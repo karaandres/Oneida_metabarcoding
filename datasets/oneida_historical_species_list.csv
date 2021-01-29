@@ -1,86 +1,86 @@
-﻿historical
-alewife
-American eel
-American gizzard shad
-Atlantic salmon
-banded killifish
-bigmouth shiner
-black crappie
-blackchin shiner
-blacknose dace
-blacknose shiner
-blackside darter
-blueback herring
-bluegill
-bluntnose minnow
-bowfin
-brassy minnow
-bridle shiner
-brindled madtom
-brook silverside
-brook stickleback
-brook trout
-brown bullhead
-brown trout
-burbot
-central mudminnow
-central stoneroller
-chain pickerel
-channel catfish
-cisco
-common carp
-common shiner
-creek chub
-creek chubsucker
-cutlips minnow
-eastern silvery minnow
-emerald shiner
-fallfish
-fantail darter
-fathead minnow
-freshwater drum
-golden shiner
-goldfish
-greater redhorse
-green sunfish
-hornyhead chub
-Iowa darter
-lake sturgeon
-largemouth bass
-logperch
-longnose dace
-longnose gar
-longnose sucker
-margined madtom
-mottled sculpin
-northern hogsucker
-northern pike
-northern sunfish
-pearl dace
-pumpkinseed
-rainbow trout
-redside dace
-rock bass
-rosyface shiner
-round goby
-rudd
-sand shiner
-satinfin shiner
-sea lamprey
-shorthead redhorse
-slimy sculpin
-smallmouth bass
-spotfin shiner
-spottail shiner
-stonecat
-tadpole madtom
-tessellated darter
-tiger musky
-trout perch
-walleye
-white bass
-white crappie
-white perch
-white sucker
-yellow bullhead
-yellow perch
+﻿scomnames,species ,since_1990
+lake sturgeon,Acipenser fulvescens ,1
+blueback herring,Alosa aestivalis ,1
+alewife,Alosa pseudoharengus,1
+rock bass,Ambloplites rupestris,1
+yellow bullhead,Ameiurus natalis,1
+brown bullhead,Ameiurus nebulosus,1
+bowfin,Amia calva,1
+American eel,Anguilla rostrata ,1
+freshwater drum,Aplodinotus grunniens,1
+central stoneroller,Campostoma anomalum ,1
+goldfish,Carassius auratus ,1
+longnose sucker,Catostomus catostomus,1
+white sucker,Catostomus commersonii,1
+redside dace,Clinostomus elongatus ,1
+cisco,Coregonus artedi,1
+mottled sculpin,Cottus bairdi,1
+slimy sculpin,Cottus cognatus,1
+brook stickleback,Culaea inconstans,1
+satinfin shiner,Cyprinella analostana ,1
+spotfin shiner,Cyprinella spiloptera ,1
+common carp,Cyprinus carpio ,1
+American gizzard shad,Dorosoma cepedianum,1
+creek chubsucker,Erimyzon oblongus,1
+northern pike,Esox lucius,1
+tiger musky,Esox lucius x Esox masquinongy ,1
+chain pickerel,Esox niger,1
+Iowa darter,Etheostoma exile,0
+fantail darter,Etheostoma flabellare,1
+tessellated darter,Etheostoma olmstedi,1
+cutlips minnow,Exoglossum maxillingua ,1
+banded killifish,Fundulus diaphanus,1
+brassy minnow,Hybognathus hankinsoni ,1
+eastern silvery minnow,Hybognathus regius ,1
+northern hogsucker,Hypentelium nigricans,1
+channel catfish,Ictalurus punctatus,1
+brook silverside,Labidesthes sicculus,1
+longnose gar,Lepisosteus osseus ,1
+green sunfish,Lepomis cyanellus,1
+pumpkinseed,Lepomis gibbosus,1
+bluegill,Lepomis macrochirus,1
+northern sunfish,Lepomis peltastes,0
+burbot,Lota lota,1
+common shiner,Luxilus cornutus ,1
+pearl dace,Margariscus margarita ,1
+smallmouth bass,Micropterus dolomieu,1
+largemouth bass,Micropterus salmoides,1
+white perch,Morone americana,1
+white bass,Morone chrysops,1
+shorthead redhorse,Moxostoma macrolepidotum,1
+greater redhorse,Moxostoma valenciennesi,1
+round goby,Neogobius melanostomus,1
+hornyhead chub,Nocomis biguttatus ,1
+golden shiner,Notemigonus crysoleucas ,1
+emerald shiner,Notropis atherinoides ,1
+bridle shiner,Notropis bifrenatus,0
+bigmouth shiner,Notropis dorsalis,0
+blackchin shiner,Notropis heterodon,0
+blacknose shiner,Notropis heterolepis,1
+rosyface shiner,Notropis rubellus,1
+sand shiner,Notropis stramineus,1
+spottail shiner,Notrropis hudsonius,1
+stonecat,Noturus flavus,1
+tadpole madtom,Noturus gyrinus,0
+margined madtom,Noturus insignis,1
+brindled madtom,Noturus miurus,0
+rainbow trout,Oncorhynchus mykiss,1
+yellow perch,Perca flavescens,1
+logperch,Percina caprodes,1
+blackside darter,Percina maculata,1
+trout perch,Percopsis omiscomaycus,1
+sea lamprey,Petromyzon marinus ,1
+bluntnose minnow,Pimephales notatus,1
+fathead minnow,Pimephales promelas,1
+white crappie,Pomoxis annularis,0
+black crappie,Pomoxis nigromaculatus,1
+blacknose dace,Rhinichthys atratulus,1
+longnose dace,Rhinichthys cataractae,1
+Atlantic salmon,Salmo salar,1
+brown trout,Salmo trutta,1
+brook trout,Salvelinus fontinalis,1
+walleye,Sander vitreus,1
+rudd,Scardinius erythrophthalmus,1
+creek chub,Semotilus atromaculatus,1
+fallfish,Semotilus corpralis,1
+central mudminnow,Umbra limi,1
