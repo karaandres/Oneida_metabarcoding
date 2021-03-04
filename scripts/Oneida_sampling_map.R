@@ -2,6 +2,7 @@
 ### Make a map of eDNA sampling sites and electrofishing surveys in Oneida lake
 
 # read in sampling sampling points longitude/latitude
+<<<<<<< HEAD
 eDNA_dat <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_eDNA_sample_metadata.csv")
 ef_dat <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/EF_datasets/EF spring std site locations2.csv")
 fyke_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/2017 oneida fyke.csv")
@@ -17,10 +18,15 @@ seine_sampling_points <- data.frame(lat=unique(na.omit(seine_dat$Latitude)),long
 
 all_sampling_points <- rbind(eDNA_sampling_points, ef_sampling_points, fyke_sampling_points,
                              gillnet_sampling_points, seine_sampling_points)
+=======
+sampling_points <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_eDNA_sample_metadata.csv") # not projected
+sampling_points <- sampling_points[-12,c("lat","long")] # lat/long, remove field blank (sample 12)
+>>>>>>> 2ef9b7c3c0e3be42e1cbcef9b1790b2f14680620
 
 # make map
 library(ggmap)
 library(ggsn)
+<<<<<<< HEAD
 library(spData)
 library(sf)
 library(rgdal)
@@ -60,4 +66,19 @@ inset_map <- ggdraw() + draw_plot(oneida_lake_map) +
 inset_map
 
 ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/oneida_lake_map.pdf", plot = inset_map, dpi=600)
+=======
+mapbox <- c(-76.2, 43.13, -75.7, 43.28) # specify map boundaries
+oneida_lake <- get_map(location = mapbox, source = "stamen", maptype = "terrain", zoom = 12)
+
+oneida_lake_map <- ggmap(oneida_lake) +
+  geom_point(data = sampling_points,aes(x = long, y = lat), color = "black", size = 3, alpha = 0.7) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank(),
+        rect = element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank()) +
+  ggsn::scalebar(location = "bottomleft", x.min = -76.18, x.max = -75.7, 
+           y.min = 43.138, y.max = 43.28, 
+           dist = 5, dist_unit="km", transform = TRUE, 
+           model = "WGS84", height = 0.05, 
+           st.dist = 0.05, st.bottom=FALSE)
+# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/oneida_lake_map.png", plot = oneida_lake_map)
+>>>>>>> 2ef9b7c3c0e3be42e1cbcef9b1790b2f14680620
 

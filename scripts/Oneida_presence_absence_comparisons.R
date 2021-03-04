@@ -26,7 +26,7 @@ sp_read_count_by_site$scomnames <- str_replace_all(sp_read_count_by_site$scomnam
 eDNA_dat <- t(as.matrix(sp_read_count_by_site[,-c(1:4)])) # transpose to create community dataset
 colnames(eDNA_dat) <- sp_read_count_by_site$scomnames
 eDNA_dat <- data.frame(Site=rownames(eDNA_dat),eDNA_dat)
-  
+
 # Electrofishing dataset
 to_replace <- c("chubsucker","gizzard.shad","killifish","lepomis","pumpkinseedXgreen.sunfish","redhorse","unknown.shiner")
 replace_with <- c("creek.chubsucker","American.gizzard.shad","banded.killifish","Lepomis.1","Lepomis.2","Moxostoma.sp.","Notropis.sp.")
@@ -35,8 +35,8 @@ colnames(ef_dat) <- str_replace_all(colnames(ef_dat), replace_with)
 ef_dat <- ef_dat %>% mutate(Lepomis.sp.=Lepomis.1+Lepomis.2, .keep = "unused")
 # Collapse reads/species counts by site (triplicate eDNA samples/multiple EF passes)
 ef_dat_sites <- as.data.frame(ef_dat %>% 
-  group_by(Site) %>% 
-  summarise(across(where(is.numeric), sum)))
+                                group_by(Site) %>% 
+                                summarise(across(where(is.numeric), sum)))
 ef_dat_sites$Site <- gsub(" [[:digit:]]+", "", oneida_ef$Site) # remove pass number 
 
 # Fyke dataset
@@ -64,15 +64,15 @@ names(replace_with) <- to_replace
 colnames(gillnet_dat) <- str_replace_all(colnames(gillnet_dat), replace_with)
 gillnet_dat <- gillnet_dat %>% select(Site, walleye:round.goby)
 gillnet_dat[is.na(gillnet_dat)] <- 0
-  
+
 # Seine dataset
 to_replace <- c(" ","gizzard.shad","shiner.sp.","lepomis.sp.")
 replace_with <- c("\\.","American.gizzard.shad","Notropis.sp.","Lepomis.sp.")
 names(replace_with) <- to_replace
 seine_dat$Species <- str_replace_all(seine_dat$Species, replace_with)
 seine_dat <- as.data.frame(seine_dat %>% pivot_wider(names_from = Species, values_from = Number.Caught) %>%
-  group_by(Site) %>%
-  summarise(across(bluegill:chain.pickerel, sum, na.rm = TRUE)))
+                             group_by(Site) %>%
+                             summarise(across(bluegill:chain.pickerel, sum, na.rm = TRUE)))
 
 ### Get species totals across all sites
 
@@ -103,7 +103,7 @@ gillnet_totals <- data.frame(species = colnames(gillnet_dat[,-1]),
 gillnet_totals <- gillnet_totals[gillnet_totals$number > 0, ]
 gillnet_totals <- gillnet_totals[order(gillnet_totals$species),]
 gillnet_totals$gear <- rep("gillnet",nrow(gillnet_totals))
-  
+
 # Seine species totals
 seine_totals <- data.frame(species = colnames(seine_dat[,-1]),
                            number = colSums(seine_dat[,-1]))
@@ -116,9 +116,9 @@ historical_dat$scomnames <- gsub(" ", ".", historical_dat$scomnames)
 historical_totals <- data.frame(species=historical_dat$scomnames,number=historical_dat$since_1990,
                                 gear=rep("historical",nrow(historical_dat)))
 all_methods_totals <- rbind(historical_totals, eDNA_totals,ef_totals,fyke_totals,
-                    gillnet_totals,seine_totals)
+                            gillnet_totals,seine_totals)
 all_methods_totals <- as.data.frame(all_methods_totals %>% 
-  pivot_wider(names_from = gear, values_from = number))
+                                      pivot_wider(names_from = gear, values_from = number))
 all_methods_totals[is.na(all_methods_totals)] <- 0
 
 # All methods presence-absence
@@ -145,8 +145,8 @@ cols <- c(brewer.pal(8, "Dark2"),"#386CB0","black")
 my.cols <- cols[c(10,4,9,1,6,3)]
 # pdf("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/sp_lists_overlap.pdf", width=10, height=7) 
 sp_lists_overlap <- upset(all_methods_presence, nsets = 6, sets.bar.color = my.cols, order.by = "freq",
-      mainbar.y.label = "Number of overlapping species", text.scale=c(1.7, 1.5, 1.2,1.5,1.5,1.5),
-      sets.x.label = "Number of species per dataset")
+                          mainbar.y.label = "Number of overlapping species", text.scale=c(1.7, 1.5, 1.2,1.5,1.5,1.5),
+                          sets.x.label = "Number of species per dataset")
 # dev.off()
 
 ###############################################################################################
@@ -180,7 +180,7 @@ all_methods_prop <- data.frame(species=all_methods_totals$species,
                                lapply(all_methods_totals[,3:7], function(x) x / sum(x)))
 
 all_methods_prop <- as.data.frame(all_methods_prop %>%
-  pivot_longer(!species, names_to = "gear", values_to = "prop"))
+                                    pivot_longer(!species, names_to = "gear", values_to = "prop"))
 top_spp <- all_methods_prop %>% 
   arrange(desc(prop)) %>% 
   group_by(gear) %>% slice(1:8)
