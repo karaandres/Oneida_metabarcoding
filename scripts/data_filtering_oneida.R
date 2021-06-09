@@ -48,7 +48,7 @@ mean(nonzero_cumul_control$reads[nonzero_cumul_control$reads>0], na.rm=T) # mean
 ASV_count_by_sites_0.001_adjusted <- matrix(NA, nrow = nrow(ASV_count_by_sites_0.001), ncol = ncol(ASV_count_by_sites_0.001)-5) # create empty matrix to fill
 for (i in 1:(ncol(ASV_count_by_sites_0.001)-5)){ # for each column (sample)
   for (j in 1:nrow(ASV_count_by_sites_0.001)){ # for each row (ASV)
-    if (ASV_count_by_sites_0.001[j,i]<23) { # if number of reads in sample is <23
+    if (ASV_count_by_sites_0.001[j,i]<mean(nonzero_cumul_control$reads[nonzero_cumul_control$reads>0], na.rm=T)) { # if number of reads in sample is <23
       ASV_count_by_sites_0.001_adjusted[j,i] <- 0 # replace reads <23 with a 0
     } else ASV_count_by_sites_0.001_adjusted[j,i] <- ASV_count_by_sites_0.001[j,i] # otherwise they stay the same
   }
@@ -76,8 +76,7 @@ for (i in 1:nrow(ASV_count_by_sites_cleaned)){ # for each ASV
   }
 }
 
-# Sum counts for each species (combine ASVs wiht same taxonomic assigment)
-# write.csv(sp_count_by_site, "/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/sp_read_count_by_site.csv") # read counts per site by species excluding blanks
+# Sum counts for each species (combine ASVs with same taxonomic assignment)
 library(dplyr)
 sp_count_by_site <- ASV_count_by_sites_lowest_tax %>% 
   group_by(species) %>% 

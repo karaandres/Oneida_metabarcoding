@@ -4,133 +4,13 @@
 ### Created by K. Andres and T. Lambert
 
 historical_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/oneida_historical_species_list.csv", header = TRUE)
-sp_read_count_by_site <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/sp_read_count_by_site.csv")
-ef_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/Oneida_2017_comm_dataset.csv")
-fyke_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/2017 oneida fyke.csv")
-gillnet_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/2017 oneida gill net.csv")
-seine_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/2017 oneida seine.csv")
-
-library(dplyr)
-library(tidyr)
-library(stringr)
-
-### Reconcile inconsistencies in species names across datasets and create community datasets (vegan)
-
-# eDNA dataset
-to_replace <- c(" ","Ambloplites.rupestris","Gobius","Labidesthes","northern.hog.sucker","Percopsis.omiscomaycus","pumpkinseed.sunfish","tessallated.darter",
-                "shortnose.gar","Cottidae","Cyprinidae","Cyprinus","Luxilus","Notropis","Percina","blacktip.jumprock")
-replace_with <- c("\\.","rock.bass","round.goby","brook.silverside","northern.hogsucker","trout.perch","pumpkinseed","tessellated.darter",
-                  "longnose.gar","Cottidae.sp.","Cyprinidae.sp.","Cyprinus.sp.","Luxilus.sp.","Notropis.sp.","Percina.sp.","Moxostoma.sp.")
-names(replace_with) <- to_replace
-sp_read_count_by_site$scomnames <- str_replace_all(sp_read_count_by_site$scomnames, replace_with)
-eDNA_dat <- t(as.matrix(sp_read_count_by_site[,-c(1:4)])) # transpose to create community dataset
-colnames(eDNA_dat) <- sp_read_count_by_site$scomnames
-eDNA_dat <- data.frame(Site=rownames(eDNA_dat),eDNA_dat)
-
-# Electrofishing dataset
-to_replace <- c("chubsucker","gizzard.shad","killifish","lepomis","pumpkinseedXgreen.sunfish","redhorse","unknown.shiner")
-replace_with <- c("creek.chubsucker","American.gizzard.shad","banded.killifish","Lepomis.1","Lepomis.2","Moxostoma.sp.","Notropis.sp.")
-names(replace_with) <- to_replace
-colnames(ef_dat) <- str_replace_all(colnames(ef_dat), replace_with)
-ef_dat <- ef_dat %>% mutate(Lepomis.sp.=Lepomis.1+Lepomis.2, .keep = "unused")
-# Collapse reads/species counts by site (triplicate eDNA samples/multiple EF passes)
-ef_dat_sites <- as.data.frame(ef_dat %>% 
-                                group_by(Site) %>% 
-                                summarise(across(where(is.numeric), sum)))
-ef_dat_sites$Site <- gsub(" [[:digit:]]+", "", oneida_ef$Site) # remove pass number 
-
-# Fyke dataset
-fyke_dat <- fyke_dat %>% 
-  mutate(largemouth.bass=largemouth.bass+largemouth.bass.YOY, .keep = "unused") %>%
-  mutate(smallmouth.bass=smallmouth.bass+smallmouth.bass.YOY, .keep = "unused") %>%
-  mutate(walleye=walleye+walleye.YOY, .keep = "unused") %>%
-  mutate(yellow.perch=yellow.perch+yellow.perch.YOY, .keep = "unused")
-to_replace <- c("american.eel","Cisco","Common.carp","darter","gizzard.shad","redhorse")
-replace_with <- c("American.eel","cisco","common.carp","Etheostoma.sp.","American.gizzard.shad","Moxostoma.sp.")
-names(replace_with) <- to_replace
-colnames(fyke_dat) <- str_replace_all(colnames(fyke_dat), replace_with)
-fyke_dat$Other
-fyke_dat <- fyke_dat %>% select(Site, American.eel:yellow.perch)
-fyke_dat$satinfin.shiner <- c(rep(0,4),1,rep(0,31))
-fyke_dat$bluntnose.minnow <- c(rep(0,7),1,0,0,0,1,0,0,0,0,0,2,rep(0,13),2,0,0,0,0)
-fyke_dat$creek.chubsucker <- c(rep(0,18),1,0,0,3,rep(0,14))
-fyke_dat$PSXGSF <- c(rep(0,26),1,0,1,rep(0,7))
-fyke_dat <- fyke_dat %>% mutate(Lepomis.sp.=PSXGSF+Lepomis.YOY, .keep = "unused")
-
-# Gill net dataset
-to_replace <- c("gizzard.shad","redhorse.sp.","tiger.muskellunge")
-replace_with <- c("American.gizzard.shad","Moxostoma.sp.","tiger.musky")
-names(replace_with) <- to_replace
-colnames(gillnet_dat) <- str_replace_all(colnames(gillnet_dat), replace_with)
-gillnet_dat <- gillnet_dat %>% select(Site, walleye:round.goby)
-gillnet_dat[is.na(gillnet_dat)] <- 0
-
-# Seine dataset
-to_replace <- c(" ","gizzard.shad","shiner.sp.","lepomis.sp.")
-replace_with <- c("\\.","American.gizzard.shad","Notropis.sp.","Lepomis.sp.")
-names(replace_with) <- to_replace
-seine_dat$Species <- str_replace_all(seine_dat$Species, replace_with)
-seine_dat <- as.data.frame(seine_dat %>% pivot_wider(names_from = Species, values_from = Number.Caught) %>%
-                             group_by(Site) %>%
-                             summarise(across(bluegill:chain.pickerel, sum, na.rm = TRUE)))
-
-### Get species totals across all sites
-
-# eDNA species totals 
-eDNA_totals <- data.frame(species = colnames(eDNA_dat[,-1]),
-                          number = colSums(eDNA_dat[,-1]))
-eDNA_totals <- eDNA_totals[eDNA_totals$number > 0, ]
-eDNA_totals <- eDNA_totals[order(eDNA_totals$species),]
-eDNA_totals$gear <- rep("eDNA",nrow(eDNA_totals))
-
-# Electrofishing species totals
-ef_totals <- data.frame(species = colnames(ef_dat[,-1]),
-                        number = colSums(ef_dat[,-1]))
-ef_totals <- ef_totals[ef_totals$number > 0, ]
-ef_totals <- ef_totals[order(ef_totals$species),]
-ef_totals$gear <- rep("ef",nrow(ef_totals))
-
-# Fyke species totals
-fyke_totals <- data.frame(species = colnames(fyke_dat[,-1]),
-                          number = colSums(fyke_dat[,-1]))
-fyke_totals <- fyke_totals[fyke_totals$number > 0, ]
-fyke_totals <- fyke_totals[order(fyke_totals$species),]
-fyke_totals$gear <- rep("fyke",nrow(fyke_totals))
-
-# Gillnet species totals
-gillnet_totals <- data.frame(species = colnames(gillnet_dat[,-1]),
-                             number = colSums(gillnet_dat[,-1]))
-gillnet_totals <- gillnet_totals[gillnet_totals$number > 0, ]
-gillnet_totals <- gillnet_totals[order(gillnet_totals$species),]
-gillnet_totals$gear <- rep("gillnet",nrow(gillnet_totals))
-
-# Seine species totals
-seine_totals <- data.frame(species = colnames(seine_dat[,-1]),
-                           number = colSums(seine_dat[,-1]))
-seine_totals <- seine_totals[seine_totals$number > 0, ]
-seine_totals <- seine_totals[order(seine_totals$species),]
-seine_totals$gear <- rep("seine", nrow(seine_totals))
-
-# All methods totals
-historical_dat$scomnames <- gsub(" ", ".", historical_dat$scomnames)
-historical_totals <- data.frame(species=historical_dat$scomnames,number=historical_dat$since_1990,
-                                gear=rep("historical",nrow(historical_dat)))
-all_methods_totals <- rbind(historical_totals, eDNA_totals,ef_totals,fyke_totals,
-                            gillnet_totals,seine_totals)
-all_methods_totals <- as.data.frame(all_methods_totals %>% 
-                                      pivot_wider(names_from = gear, values_from = number))
-all_methods_totals[is.na(all_methods_totals)] <- 0
-
-# All methods presence-absence
-all_methods_presence <- all_methods_totals[!grepl(".sp", all_methods_totals$species),] # remove genus-level IDs
-all_methods_presence[,2:7][all_methods_presence[,2:7]>0] <- 1 # indicate presence w/ 1
-all_methods_presence <- left_join(all_methods_presence, historical_dat[,1:2], by=c("species"="scomnames")) %>%
-  select(species.y, everything()) %>%  
-  arrange(desc(historical), desc(eDNA), desc(ef), desc(fyke), desc(gillnet), desc(seine))
-all_methods_presence$species <- gsub("\\.", " ", all_methods_presence$species)
-colnames(all_methods_presence) <- c("Scientific name","Common name","Historical","eDNA","Electrofishing",
-                                    "Fyke net","Gill net","Seine")
-# write.csv(all_methods_presence, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/sp_lists_comparison.csv", row.names=FALSE)
+eDNA_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/eDNA_dat.csv", header = TRUE)
+ef_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/ef_dat.csv", header = TRUE)
+fyke_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/fyke_dat.csv", header = TRUE)
+gillnet_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/gillnet_dat.csv", header = TRUE)
+seine_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/seine_dat.csv", header = TRUE)
+all_methods_abundance <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/all_methods_abundance.csv", header = TRUE)
+all_methods_presence <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/all_methods_presence.csv", header = TRUE)
 
 ###############################################################################################
 ############# Part 1: Lake-wide species presence-absence ##########################
@@ -140,6 +20,7 @@ colnames(all_methods_presence) <- c("Scientific name","Common name","Historical"
 library(RColorBrewer)
 library(stringr)
 library(UpSetR)
+library(ggplot2)
 
 cols <- c(brewer.pal(8, "Dark2"),"#386CB0","black")
 my.cols <- cols[c(10,4,9,1,6,3)]
@@ -147,82 +28,292 @@ my.cols <- cols[c(10,4,9,1,6,3)]
 sp_lists_overlap <- upset(all_methods_presence, nsets = 6, sets.bar.color = my.cols, order.by = "freq",
                           mainbar.y.label = "Number of overlapping species", text.scale=c(1.7, 1.5, 1.2,1.5,1.5,1.5),
                           sets.x.label = "Number of species per dataset")
+sp_lists_overlap
 # dev.off()
 
-###############################################################################################
-############# Part 2: Species accumulation curves ##########################
-###############################################################################################
+# Get species richness totals for table
+names(all_methods_presence)
+length(all_methods_presence[,5][all_methods_presence[,3]>0]) # hist richness
+length(all_methods_presence[,5][all_methods_presence[,4]>0]) # eDNA richness
+length(all_methods_presence[,5][all_methods_presence[,5]>0]) # ef richness
+length(all_methods_presence[,5][all_methods_presence[,6]>0]) # fyke richness
+length(all_methods_presence[,5][all_methods_presence[,7]>0]) # gill richness
+length(all_methods_presence[,5][all_methods_presence[,8]>0]) # seine richness
+length(rowSums(all_methods_presence[,5:8])[rowSums(all_methods_presence[,5:8])]>0) # all traditional gears richness
 
+z <- all_methods_presence$Historical
+length(z[z>0]) # species richness of historical dataset
+y <- rowSums(all_methods_presence[,c(5,6,8)]) # nearshore gears
+length(y[y>0]) # species richness across all nearshore gears
+
+###############################################################################################
+################ Part 2: Species richness analyses #############################
+###############################################################################################
 library(vegan)
 library(scales)
-sp_acc <- specaccum(eDNA_dat)
+library(pals)
+library(ggplot2)
+
+### Species accumulation curves
+eDNA_dat_spp <- eDNA_dat[, -grep(".sp.", colnames(eDNA_dat))]
+sp_acc <- specaccum(eDNA_dat_spp[,-1])
 # pdf("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/spp_accum_curve_2.12.pdf", width=8, height=6)
 plot(sp_acc, ci.type="poly", col=my.cols[2], lwd=3, ci.lty=0, ci.col=alpha(my.cols[2], 0.2), 
      ylab="Number of species",xlab="Number of sites", cex.axis=1.5, cex.lab=1.5, ylim = c(0,60))
-sp_acc_ef <- specaccum(ef_dat[,-1])
+
+ef_dat_spp <- ef_dat[, -grep(".sp.", colnames(ef_dat))]
+sp_acc_ef <- specaccum(ef_dat_spp[,-1])
 plot(sp_acc_ef, ci.type="poly", col=my.cols[3], lwd=3, ci.lty=0, ci.col=alpha(my.cols[3], 0.3), add=T)
-sp_acc_fyke <- specaccum(fyke_dat[,-1])
+
+fyke_dat_spp <- fyke_dat[, -grep(".sp.", colnames(fyke_dat))]
+sp_acc_fyke <- specaccum(fyke_dat_spp[,-1])
 plot(sp_acc_fyke, ci.type="poly", col=my.cols[5], lwd=3, ci.lty=0, ci.col=alpha(my.cols[5], 0.3), add=T)
-sp_acc_gillnet <- specaccum(gillnet_dat[,-1])
+
+gillnet_dat_spp <- gillnet_dat[, -grep(".sp.", colnames(gillnet_dat))]
+sp_acc_gillnet <- specaccum(gillnet_dat_spp[,-1])
 plot(sp_acc_gillnet, ci.type="poly", col=my.cols[6], lwd=3, ci.lty=0, ci.col=alpha(my.cols[6], 0.3), add=T)
-sp_acc_seine <- specaccum(seine_dat[,-1])
+
+seine_dat_spp <- seine_dat[, -grep(".sp.", colnames(seine_dat))]
+sp_acc_seine <- specaccum(seine_dat_spp[,-1])
 plot(sp_acc_seine, ci.type="poly", col=my.cols[4], lwd=3, ci.lty=0, ci.col=alpha(my.cols[4], 0.5), add=T)
-legend(0, 60, legend=c("eDNA","Electrofishing","Fyke","Gillnet","Seine"), col=my.cols[c(2,3,5,6,4)], lwd=3,bty="n")
+
+legend(0, 60, legend=c("eDNA","Electrofishing","Fyke net","Gill net","Seining"), col=my.cols[c(2,3,5,6,4)], lwd=3,bty="n")
 # dev.off()
 
+### Total species richness per method
+specpool(eDNA_dat_spp[,-1])
+specpool(ef_dat_spp[,-1])
+specpool(fyke_dat_spp[,-1])
+specpool(seine_dat_spp[,-1])
+specpool(gillnet_dat_spp[,-1])
+
+### Species richness per habitat type for eDNA
+eDNA_metadata <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_eDNA_sample_metadata.csv", header = TRUE)
+eDNA_dat_x <- eDNA_dat_spp[!grepl("Y", eDNA_dat_spp$Site),] # remove subsamples (labeled with "Y")
+eDNA_dat_x$Habitat <- c(eDNA_metadata$Location.type[-12]) # all ef surveys are nearshore
+eDNA_dat_x$Habitat <- gsub("?","",eDNA_dat_x$Habitat, fixed = TRUE)
+sp_rich_habitat <- rowsum(eDNA_dat_x[,2:(ncol(eDNA_dat_x)-1)], eDNA_dat_x$Habitat)
+rowSums(sp_rich_habitat != 0) # species richness per habitat type
+
+### Comparison of species occurrence for eDNA and traditional gears for each habitat type
+# Nearshore occurrence: eDNA vs. ef, seine, fyke
+nearshore_occur <- bind_rows(eDNA_dat_x[eDNA_dat_x$Habitat=="Nearshore",-(ncol(eDNA_dat_x))], ef_dat_spp, seine_dat_spp, fyke_dat_spp) # nearshore datasets
+nearshore_occur[is.na(nearshore_occur)] <- 0 # indicate absence w/ 0
+nearshore_occur <- data.frame(traditional=colSums(nearshore_occur[19:87,-1] != 0)/nrow(nearshore_occur[19:87,-1]),
+                            edna=colSums(nearshore_occur[1:18,-1] != 0)/nrow(nearshore_occur[1:18,-1]))
+nearshore_occur <- nearshore_occur[rowSums(nearshore_occur>0)!= 0,]
+nearshore_occur$habitat <- rep("Nearshore",nrow(nearshore_occur))
+
+# Pelagic occurrence: eDNA vs. gillnet
+pelagic_occur <- bind_rows(eDNA_dat_x[eDNA_dat_x$Habitat=="Midlake",-(ncol(eDNA_dat_x))], gillnet_dat_spp) # nearshore datasets
+pelagic_occur[is.na(pelagic_occur)] <- 0 # indicate absence w/ 0
+pelagic_occur <- data.frame(traditional=colSums(pelagic_occur[4:18,-1] != 0)/nrow(pelagic_occur[4:18,-1]),
+                                 edna=colSums(pelagic_occur[1:3,-1] != 0)/3)
+pelagic_occur <- pelagic_occur[rowSums(pelagic_occur>0)!= 0,]
+pelagic_occur$habitat <- rep("Pelagic",nrow(pelagic_occur))
+
+# Bind into single dataset
+sp_occurrence <- rbind(pelagic_occur, nearshore_occur)
+
+# Kendall's rank correlation of species occurrence using eDNA vs. traditional gears per habitat type
+cor.test(sp_occurrence[sp_occurrence$habitat=="Pelagic",]$traditional,sp_occurrence[sp_occurrence$habitat=="Pelagic",]$edna, method="kendall")
+cor.test(sp_occurrence[sp_occurrence$habitat=="Nearshore",]$traditional,sp_occurrence[sp_occurrence$habitat=="Nearshore",]$edna, method="kendall")
+
+sp_occurrence_plot <- ggplot(sp_occurrence, aes(x=traditional, y=edna, color=habitat)) +
+  geom_jitter(size=4, width=0.02, height=0) + # jitter to see overlapping points
+  xlab("Traditional methods species occurrence") + 
+  ylab(expression(atop("eDNA metabarcoding", paste("species occurrence")))) +
+  theme_bw() +
+  theme(text = element_text(size=15)) +
+  facet_wrap(~habitat) +
+  theme(legend.position='none') +
+  scale_color_manual(name="Habitat type",values=as.vector(stepped(14)[c(9,14)]))
+sp_occurrence_plot
+
+# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/sp_occurrence.pdf", plot = sp_occurrence_plot, dpi=600, width=9, height=4,units="in")
+# ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/sp_occurrence.png", plot = sp_occurrence_plot, dpi=600, width=9, height=4,units="in")
+
 ###############################################################################################
-################# Part 3: Species relative proportions #################################
+################ Part 3: Species relative proportion analyses #################################
 ###############################################################################################
 
-library(pals)
-library(ggplot2)
-all_methods_prop <- data.frame(species=all_methods_totals$species,
-                               lapply(all_methods_totals[,3:7], function(x) x / sum(x)))
-
+all_methods_prop <- data.frame(species=all_methods_abundance$species,
+                               lapply(all_methods_abundance[,3:7], function(x) x / sum(x)))
 all_methods_prop <- as.data.frame(all_methods_prop %>%
                                     pivot_longer(!species, names_to = "gear", values_to = "prop"))
+
+# Subset to the top 8 species per dataset
 top_spp <- all_methods_prop %>% 
   arrange(desc(prop)) %>% 
   group_by(gear) %>% slice(1:8)
 
-# Stacked + percent
+# Stacked barplot of relative proportion (counts or reads) for top 8 species per dataset
 species_proportions <- ggplot(top_spp, aes(fill=species, y=prop, x=gear)) + 
   geom_bar(position="stack", stat="identity") +
-  scale_fill_manual(values=as.vector(stepped(20))) +
+  scale_fill_manual(values=as.vector(stepped(21))) +
   xlab("Sampling gear") + ylab("Species proportion") +
   labs(fill = "Species") +
   scale_x_discrete(labels=c("eDNA","Electrofishing","Fyke net","Gill net","Seine")) +
   theme_bw()
 species_proportions
+
 # ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/all_methods_species_proportion.pdf", plot = species_proportions, dpi=600)
+# ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/all_methods_species_proportion_xcarp.png", plot = species_proportions, dpi=600)
 
 ###############################################################################################
-################# Part 4: Habitat comparison -- eDNA vs. traditional methods ########################
+################# Part 4: Habitat comparison: eDNA vs. traditional methods ###################
 ###############################################################################################
+library(ggpubr)
 
+# eDNA NMDS: presence-absence data
 eDNA_metadata <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_eDNA_sample_metadata.csv", header = TRUE)
-nmds_presence_dat <- bind_rows(eDNA_dat, ef_dat) # combine eDNA and ef datasets
+nmds_presence_dat <- eDNA_dat_spp
 nmds_presence_dat <- nmds_presence_dat[!grepl("Y", nmds_presence_dat$Site),] # remove subsamples (labeled with "Y")
-nmds_presence_dat[is.na(nmds_presence_dat)] <- 0 # indicate absence w/ 0
 nmds_presence_dat[,-1][nmds_presence_dat[,-1]>0] <- 1 # indicate presence w/ 1
-rownames(nmds_presence_dat) <- c(paste0("eDNA_",c(1:11,13:26)),paste0("ef_",c(1:24)))
-
-NMDS_dat <- metaMDS(nmds_presence_dat[,-(1:2)],distance="bray",trymax = 200) # nmds w/ Sorensen index
+NMDS_dat <- metaMDS(nmds_presence_dat[,-1],distance="bray",trymax = 200) # nmds w/ Sorensen index
 data.scores <- as.data.frame(scores(NMDS_dat)) # turn into data frame for plotting
-data.scores$Sample <- factor(rownames(data.scores)) 
-data.scores$Method <-  c(rep("eDNA",25),rep("ef",24))
-data.scores$Habitat <- c(eDNA_metadata$Location.type[-12], rep("Nearshore",24)) # all ef surveys are nearshore
+data.scores$Habitat <- eDNA_metadata$Location.type[-12] # all ef surveys are nearshore
 data.scores$Habitat <- gsub("?","",data.scores$Habitat, fixed = TRUE)
 
-nmds_plot <- ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
-  geom_point(size=5, stroke=2, aes(shape=Method, colour=Habitat))+ 
+# add hulls
+grp.a <- data.scores[data.scores$Habitat=="Midlake",][chull(data.scores[data.scores$Habitat=="Midlake", c("NMDS1", "NMDS2")]), ]
+grp.b <- data.scores[data.scores$Habitat=="Nearshore",][chull(data.scores[data.scores$Habitat=="Nearshore", c("NMDS1", "NMDS2")]), ]
+grp.c <- data.scores[data.scores$Habitat=="Inlet",][chull(data.scores[data.scores$Habitat=="Inlet", c("NMDS1", "NMDS2")]), ]
+hull.data <- rbind(grp.a, grp.b, grp.c)  #combine grp.a and grp.b
+hull.data
+
+nmds_edna <- ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(size=5, stroke=2, aes(colour=Habitat))+ 
+  geom_polygon(data=hull.data,aes(x=NMDS1,y=NMDS2,fill=Habitat,group=Habitat),alpha=0.30) + # add the convex hulls
   theme(axis.text = element_text(colour = "black", size = 12), 
         axis.title = element_text(size = 14, colour = "black"), 
         panel.background = element_blank(), 
         panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
         legend.key=element_blank()) + 
-  scale_shape_manual(name = "Method", values=c(1,16)) +
-  scale_color_manual(values=as.vector(stepped(14)[c(2,14,9)])) +
+  theme(legend.position="top") +
+  ggtitle("eDNA metabarcoding") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_manual(name="Habitat type", values=as.vector(stepped(14)[c(2,14,9)]), labels=c("Tributary","Pelagic","Nearshore")) +
+  scale_fill_manual(name="Habitat type", values=as.vector(stepped(14)[c(2,14,9)]), labels=c("Tributary","Pelagic","Nearshore")) +
   labs(x = "NMDS1", colour = "Site", y = "NMDS2")
+nmds_edna
+
+# traditional gears NMDS: presence-absence data
+nmds_presence_dat <- bind_rows(gillnet_dat_spp,ef_dat_spp,fyke_dat_spp,seine_dat_spp) # combine traditional datasets
+nmds_presence_dat[is.na(nmds_presence_dat)] <- 0 # indicate absence w/ 0
+nmds_presence_dat[,-1][nmds_presence_dat[,-1]>0] <- 1 # indicate presence w/ 1
+nmds_presence_dat <- nmds_presence_dat[,c(TRUE, colSums(nmds_presence_dat[,-1])>0)]
+nmds_presence_dat$Sampling_gear <- c(rep("Gill net",nrow(gillnet_dat_spp)),rep("Electrofishing",nrow(ef_dat_spp)),
+                            rep("Fyke net",nrow(fyke_dat_spp)),rep("Seine net",nrow(seine_dat_spp)))
+nmds_presence_dat <- nmds_presence_dat %>% select(Sampling_gear, everything()) # reorder columnns
+nmds_presence_dat <- nmds_presence_dat[c(rowSums(nmds_presence_dat[,-(1:2)])>0),] # remove samples with no species detected
+NMDS_dat <- metaMDS(nmds_presence_dat[,-(1:2)],distance="bray",trymax = 200) # nmds w/ Sorensen index
+data.scores <- as.data.frame(scores(NMDS_dat)) # turn into data frame for plotting
+data.scores$Sampling_gear <- nmds_presence_dat$Sampling_gear
+data.scores$Sampling_gear <- factor(data.scores$Sampling_gear, levels=unique(data.scores$Sampling_gear))
+
+# add hulls
+grp.a <- data.scores[data.scores$Sampling_gear=="Gill net",][chull(data.scores[data.scores$Sampling_gear=="Gill net", c("NMDS1", "NMDS2")]), ]
+grp.b <- data.scores[data.scores$Sampling_gear=="Electrofishing",][chull(data.scores[data.scores$Sampling_gear=="Electrofishing", c("NMDS1", "NMDS2")]), ]
+grp.c <- data.scores[data.scores$Sampling_gear=="Fyke net",][chull(data.scores[data.scores$Sampling_gear=="Fyke net", c("NMDS1", "NMDS2")]), ]
+grp.d <- data.scores[data.scores$Sampling_gear=="Seine net",][chull(data.scores[data.scores$Sampling_gear=="Seine net", c("NMDS1", "NMDS2")]), ]
+hull.data <- rbind(grp.a, grp.b, grp.c, grp.d)  #combine grp.a and grp.b
+hull.data
+
+nmds_traditional <- ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_point(size=5, stroke=2, aes(colour=Sampling_gear, shape=Sampling_gear))+ 
+  geom_polygon(data=hull.data,aes(x=NMDS1,y=NMDS2,fill=Sampling_gear,group=Sampling_gear),alpha=0.30) + # add the convex hulls
+  theme(axis.text = element_text(colour = "black", size = 12), 
+        axis.title = element_text(size = 14, colour = "black"), 
+        panel.background = element_blank(), 
+        panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+        legend.key=element_blank()) + 
+  theme(legend.position="top") +
+  ggtitle("Traditional sampling gears") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_color_manual(name="Sampling gear", values=as.vector(stepped(16)[c(14,9,11,12)])) +
+  scale_fill_manual(name="Sampling gear", values=as.vector(stepped(16)[c(14,11,11,10)])) +
+  scale_shape_manual(name="Sampling gear",values=c(15:18)) +
+  labs(x = "NMDS1", colour = "Sampling gear", y = "NMDS2")
+nmds_traditional
+
+nmds_plot <- ggarrange(nmds_edna, nmds_traditional, labels = c("(A)", "(B)"),ncol = 2, nrow = 1)
 nmds_plot
-# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/nmds_presence_absence.pdf", plot = nmds_plot, dpi=600)
+
+# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/nmds_plot.pdf", plot = nmds_plot, dpi=600, width=12, height=7,units="in")
+# ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/nmds_plot.png", plot = nmds_plot, dpi=600, width=12, height=7,units="in")
+
+###############################################################################################
+################# Part 5: Site comparison -- eDNA vs. electrofishing ########################
+###############################################################################################
+site_comparison <- bind_rows(eDNA_dat_spp, ef_dat_spp) # combine eDNA and ef datasets
+site_comparison <- site_comparison[!grepl("Y", site_comparison$Site),] # remove subsamples (labeled with "Y")
+site_comparison[is.na(site_comparison)] <- 0 # indicate absence w/ 0
+rownames(site_comparison) <- c(paste0("eDNA_",c(1:11,13:26)),paste0("ef_",c(1:24)))
+site_comparison$Habitat <- c(eDNA_metadata$Location.type[-12], rep("Nearshore",24)) # all ef surveys are nearshore
+site_comparison$Habitat <- gsub("?","",site_comparison$Habitat, fixed = TRUE)
+site_comparison$Site <- c(eDNA_metadata$Site[-12], site_comparison$Site[26:49]) # all ef surveys are nearshore
+site_comparison <- site_comparison[site_comparison$Habitat=="Nearshore",]
+site_comparison$Site
+site_comparison$Site_code <- c(NA, "South","South",NA,"Jewell","Jewell","Cleveland","Cleveland",
+                               "Constantia","Constantia","Poddygut","Poddygut","Aero","Aero",
+                               "Fisher","Fisher","Shackelton","Shackelton",rep("Constantia",3),rep("Fisher",3),
+                               rep("Cleveland",3),rep("Poddygut",3),rep("Aero",3),rep("Shackelton",3),rep("South",3),rep("Jewell",3))
+site_comparison <- site_comparison %>% select(c(Habitat,Site,Site_code), everything())
+site_comparison  <- site_comparison[!(is.na(site_comparison$Site_code)),]
+
+# Get eDNA totals per site
+site_comparison_edna <- rowsum(site_comparison[1:16,-c(1:3)], site_comparison$Site_code[1:16])
+site_comparison_edna$Richness <- rowSums(site_comparison_edna != 0) # species richness per site
+
+# Get ef totals per site
+site_comparison_ef <- rowsum(site_comparison[17:40,-c(1:3)], site_comparison$Site_code[17:40])
+site_comparison_ef$Richness <- rowSums(site_comparison_ef != 0) # species richness per site
+
+# differences/correlations between richness per site
+site_comparison_edna$Richness-site_comparison_ef$Richness
+mean(site_comparison_edna$Richness) # 21.625
+sd(site_comparison_edna$Richness) # 5.55
+mean(site_comparison_ef$Richness) # 17.875
+sd(site_comparison_ef$Richness) # 4.086
+wilcox.test(site_comparison_edna$Richness,site_comparison_ef$Richness)
+cor.test(site_comparison_edna$Richness,site_comparison_ef$Richness)
+plot(site_comparison_edna$Richness,site_comparison_ef$Richness)
+
+site_comparison <- data.frame(Transect=rep(rownames(site_comparison_edna),2),
+                              Sample=rep(c("eDNA","Electrofishing"), each=8),
+                              Richness=c(site_comparison_edna$Richness,site_comparison_ef$Richness))
+
+site_richness <- ggplot(site_comparison, aes(fill=Sample, y=Richness, x=Transect)) + 
+  geom_bar(position="stack", stat="identity") +
+  xlab("Transect") + ylab("Species richness") +
+  theme_bw() +
+  theme(text = element_text(size=15)) +
+  scale_fill_manual(name="Sampling method",labels=c("eDNA","Electrofishing"),values=my.cols[c(2:3)])
+site_richness
+# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/site_richness.pdf", plot = site_richness, dpi=600)
+# ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/site_richness.png", plot = site_richness, dpi=600)
+
+# Correlation in relative abundance per site: eDNA vs. ef
+edna_props <- as.data.frame(lapply(site_comparison_edna, function(x) x / sum(x)))
+edna_props[is.na(edna_props)] <- 0
+
+ef_props <- as.data.frame(lapply(site_comparison_ef, function(x) x / sum(x)))
+ef_props[is.na(ef_props)] <- 0
+
+c.coeffs <- sapply(1:(ncol(edna_props)-1), FUN = function(x) cor(edna_props[,x], ef_props[,x], method="kendall"))
+p.vals <- sapply(1:(ncol(edna_props)-1), FUN = function(x) cor.test(edna_props[,x], ef_props[,x], method="kendall")$p.value)
+df <- data.frame(Species = colnames(edna_props[,-(ncol(edna_props))]), Correlation = c.coeffs, p.vals=p.vals)
+df[order(df$Correlation, decreasing = TRUE),]
+df <- df[!is.na(df$Correlation),]
+nrow(df)
+nrow(df[df$p.vals<0.05,])
+summary(df$Correlation, na.rm = TRUE)
+
+sp_correlation <- ggplot(df, aes(x=Correlation)) + geom_histogram(bins=10,binwidth = 0.2) +
+  geom_vline(data=df, aes(xintercept=mean(Correlation)),linetype="dashed") +
+  xlim(-1,1.1) + ylab("Count") + scale_y_continuous(breaks=c(2,4,6,8,10)) +
+  theme_bw()
+sp_correlation
+# ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/sp_correlation.png", plot = sp_correlation, dpi=600, width=9, height=4,units="in")
+

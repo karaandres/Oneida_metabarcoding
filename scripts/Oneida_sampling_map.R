@@ -37,8 +37,9 @@ cols <- c(brewer.pal(8, "Dark2"),"#386CB0")
 
 oneida_lake_map <- ggmap(oneida_lake) +
   geom_point(data=all_sampling_points, mapping=aes(x=long, y=lat, color=gear, shape=gear), size=3, stroke = 1.2) +
-  scale_color_manual(values=cols[c(4,9,6,3,1)]) +
-  scale_shape_manual(values=c(17,5,3,16,6)) +
+  scale_color_manual(name="Sampling method",labels=c("eDNA","Electrofishing", "Fyke net", "Gill net", "Seine net"),values=cols[c(4,9,6,3,1)]) +
+  scale_shape_manual(name="Sampling method",labels=c("eDNA","Electrofishing", "Fyke net", "Gill net", "Seine net"),values=c(17,5,3,16,6)) +
+  geom_point(aes(x=-76, y=43.25), colour="black", shape=8, size=3) +
   geom_line(data=ef_dat, aes(x=long, y=lat, group=Description), color="white", size=0.5) +
   theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank(),
       rect = element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank()) +
@@ -57,7 +58,8 @@ region_map <- ggplot() + geom_polygon(data=map_data("state"), aes(x=long, y=lat,
 
 
 inset_map <- ggdraw() + draw_plot(oneida_lake_map) +
-  draw_plot(region_map, x = 0.63, y = 0.53, width = 0.26, height = 0.26)
+  draw_plot(region_map, x = 0.597, y = 0.57, width = 0.26, height = 0.26)
 inset_map
 
-ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/oneida_lake_map.pdf", plot = inset_map, dpi=600)
+# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/oneida_lake_map.pdf", plot = inset_map, dpi=600)
+# ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/oneida_lake_map.png", plot = inset_map, dpi=600)

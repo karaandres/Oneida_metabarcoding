@@ -1,0 +1,9 @@
+# Oneida eDNA metabarcoding 
+# Quality control: run multiqc, 8.25.2020
+
+fastqc /workdir/kja68/oneida_trimmed/*_paired.fastq.gz
+export LC_ALL=en_US.UTF-8
+export PATH=/programs/miniconda3/bin:$PATH
+source activate multiqc
+multiqc /workdir/kja68/oneida_trimmed/
+conda deactivate

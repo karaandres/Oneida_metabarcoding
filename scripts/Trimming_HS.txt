@@ -1,0 +1,36 @@
+# Oneida eDNA metabarcoding
+# Command line to remove heterogeneity spacers
+
+mkdir /workdir/kja68
+cd /workdir/kja68/
+git clone https://github.com/karaandres/Oneida_metabarcoding
+
+# make directories for forward and reverse reads: _R1 and _R2
+mkdir raw_sequence_files_R1
+mkdir raw_sequence_files_R2
+
+# Copy forward sequences and remove Peru samples (sequenced on same run)
+cp /home/kja68/Peru_metabarcoding/raw_sequence_files/*R1.fastq.gz  /workdir/kja68/raw_sequence_files_R1
+rm raw_sequence_files_R1/*_P_*
+
+# Copy reverse sequences and remove Peru samples 
+cp /home/kja68/Peru_metabarcoding/raw_sequence_files/*R2.fastq.gz  /workdir/kja68/raw_sequence_files_R2
+rm raw_sequence_files_R2/*_P_*
+
+# Copy scripts into working directory and run 
+# Trimming_HS_Primers.pl is left unmodified
+# Changed directories/added primer sequences to Running_Script_To_be_Customized_for_ur_Project.sh, saved as Running_Script_R1.sh (forward) and Running_Script_R2.sh (reverse)  
+cp Oneida_metabarcoding/scripts/Trimming_HS_Primers.pl ./
+cp Oneida_metabarcoding/scripts/Running_Script_R1.sh ./
+cp Oneida_metabarcoding/scripts/Running_Script_R2.sh ./
+sh Running_Script_R1.sh
+sh Running_Script_R2.sh
+# each script took a little over an hour to run 
+
+# copy files in each "Trimmed" directory to new directory
+mkdir oneida_trimmed && cd oneida_trimmed
+cp raw_sequence_files_R1/Trimmed/*.gz ./
+cp raw_sequence_files_R2/Trimmed/*.gz ./
+
+# remove "_TrimmedHS_R1_FASTQ" from all files (automatically added in previous step) 
+for f in *_TrimmedHS_R1_FASTQ.*; do mv -i -- "$f" "${f//_TrimmedHS_R1_FASTQ./.}"; done
