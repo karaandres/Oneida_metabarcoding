@@ -1,7 +1,7 @@
 ### Optimal method combinations for Oneida Lake
-### This code identifies the Pareto-optimal combination of methods (gears) to survey fish communities. More specifically, it resamples 2017 eDNA, electrofishing, fyke net, gill net, and seine net data from Oneida lake to estimate how to allocate effort among gears in a way that maximizes the mean number of species detected. The Pareto frontiers are calculated for combinations of all methods as well as for combinations of only traditional (non-eDNA) methods, and both are compared to species accumulation curves for each gear alone.
+### This code identifies the Pareto-optimal combination of methods (gears) to survey fish communities. Specifically, it resamples 2017 eDNA, electrofishing, fyke net, gill net, and seine net data from Oneida lake to estimate how to allocate effort among gears in a way that maximizes the mean number of species detected. The Pareto frontiers are calculated for combinations of all methods as well as for combinations of only traditional (non-eDNA) methods, and both are compared to species accumulation curves for each gear alone.
 ### Inputs: standardized 2017 gear files (eDNA_dat.csv, ef_dat.csv, fyke_dat.csv, gillnet_dat.csv, and seine_dat.csv).
-### Outputs: (1) Plots: the Pareto frontiers both for all gears and for all traditional (non-eDNA) gears are potted alongside species accumulation curves for each gear independently. (2) Tables: for a given sampling effort, the optimal allocation to each survey type.
+### Outputs: (1) Plots: the Pareto frontiers for all gears and for all traditional gears (i.e., excluding eDNA) are potted alongside species accumulation curves for each gear independently. (2) Stacked area plot: the optimal allocation to each survey type, plotted across a range of sampling efforts.
 ### Created by T. Lambert
 
 
@@ -10,6 +10,7 @@ rm(list = ls())
 library(here) # for setting paths
 library(dplyr) # for use of bind_rows()
 library(arrangements) # for use of combinations()
+
 
 
 #### Read in and format data ####
@@ -38,17 +39,21 @@ seine_dat$Method <- "seine"
 dat <- bind_rows(eDNA_dat, ef_dat, fyke_dat, gillnet_dat, seine_dat)
 dat[is.na(dat)] <- 0 # count for species not detected by a method is 0
 
+dat_by_method <- list(subset(dat, dat$Method == "eDNA"),
+                      subset(dat, dat$Method == "ef"),
+                      subset(dat, dat$Method == "fyke"),
+                      subset(dat, dat$Method == "gillnet"),
+                      subset(dat, dat$Method == "seine"))
+# TO DO: USE dat_by_method <- split(dat, dat$Method) INSTEAD. MAKE SURE THIS CHANGE DOESN'T AFFECT FORMATTING AND HENCE SCRIPT BELOW RUNS OK.
+
 
 #### Define parameters ####
 
 effort_per_sample <- c(eDNA = 2, ef = 4, fyke = 4, gillnet = 4, seine = 4) # for each gear, the effort required to obtain one sample (TO DO: OBTAIN REASONABLE ESTIMATES FOR THESE VALUES)
 
-r <- 60 # maximum number of replicate simulations per sample combination (FEWER ONLY IF FEWER THAN r SIMULATIONS ARE POSSIBLE; NOT YET ENFORCED -- DO THIS)
+effort_max <- 20 # maximum effort
 
-effort_max <- 20 # maximum effort (TO DO: enforce effort_max is below the available sampling effort for each gear that can be sampled without replacement; if not, we are artificially restricting the combinations possible at higher gear)
-
-
-## Print a warning if the maximum effort that can be obtained by resampling the data without replacement falls short of effort_max for one or more gears. 
+# Print a warning if the maximum effort that can be obtained by resampling the data without replacement falls short of effort_max for one or more gears. 
 n_spls <- as.vector(table(dat$Method)) # number of samples per method
 indicator <- (n_spls*effort_per_sample) < effort_max
 if(sum(indicator) > 0) { print(paste("Warning: effort_max exceeds available data from which to sample for the following gear(s): ", paste(names(effort_per_sample)[indicator], collapse = ", "), ".", sep = ""))}
@@ -66,43 +71,13 @@ for(k in 1:k_max) { # loop through different values of k (# samples selected per
   comb_list <- c(comb_list, as.list(data.frame(t(combs)))) # append new combs to cumulative sample list
 }
 rm(combs)
-## TO DO: RENAMING -- perhaps rename as COMBS for combinations rather than sample (e.g., comb_list not comb_list) to help distinguish preliminary from final objects used below.
 
-
-#### Simulated sample combinations ####
-# Perform r simulations per sampling combination and calculate the mean & stdev detected species richness
-
-n_spp_detected <- matrix(data = NA, nrow = length(comb_list), ncol = r) # initialize matrix to contain the numbers of species detected for each sample combination (row) and replicate (column)
-effort_combs <- sapply(1:length(comb_list), function(x) sum(effort_per_sample[comb_list[[x]]])) # recalculate total effort per sample -- TO STREAMLINE: if costly, could find a way to use calculations above and subset, rather than recalculating.
-
-# USEFUL OBJECTS: effort_combs, comb_list, n_spls, dat, dat_by_method
-dat_by_method <- list(subset(dat, dat$Method == "eDNA"),
-                      subset(dat, dat$Method == "ef"),
-                      subset(dat, dat$Method == "fyke"),
-                      subset(dat, dat$Method == "gillnet"),
-                      subset(dat, dat$Method == "seine"))
-
-for(i in 1:length(comb_list)) { # for each sampling combination...
-  n_to_select <- sapply(1:5, function(x) sum(comb_list[[i]]==x)) # number of samples per method/gear
-  for(j in 1:r) { # for each of r replicates...
-
-    for(m in 1:5) { # for each method/gear
-      # Randomly select the appropriate number of samples for each gear
-      if(m==1) {
-        dat_temp <- dat_by_method[[m]][sample(n_spls[m], n_to_select[m]), ] # initialize data frame containing simulated data for the current replicate
-      } else {
-        dat_temp <- rbind(dat_temp, dat_by_method[[m]][sample(n_spls[m], n_to_select[m]), ])
-      }
-    }
-    dat_temp <- dat_temp[ ,!colnames(dat_temp) %in% c("Method","Site")]
-    n_spp_detected[i,j] <- sum(colSums(dat_temp) > 0) # calculate the number of species detected
-    
-  }
-}
+effort_combs <- sapply(1:length(comb_list), function(x) sum(effort_per_sample[comb_list[[x]]])) # recalculate total effort per sample
 
 
 
-#### Find the Pareto frontiers ####
+
+#### Function definitions ####
 
 ## Function definition: pareto()
 ## Finds the Pareto front (set of non-dominated solutions).
@@ -119,6 +94,9 @@ pareto = function(x, y, condition = NA) {
   front <- D[which(!duplicated(cummax(D$y))),]
   return(front)
 }
+
+
+
 
 ## Function definition: idCombs()
 ## Identifies the sampling combinations that contain only the specified methods.
@@ -143,57 +121,39 @@ idCombs = function(combs = comb_list, methods = 1:5, keep = 1:5) {
 
 
 
-x <- effort_combs # effort for each sample combination
-y <- rowSums(n_spp_detected)/r # average number of species detected
-
-front_all <- pareto(x, y)
-front_trad <- pareto(x, y, condition = idCombs(keep = 2:5))
-front_eDNA <- pareto(x, y, condition = idCombs(keep = 1))
-front_ef <- pareto(x, y, condition = idCombs(keep = 2))
-front_fyke <- pareto(x, y, condition = idCombs(keep = 3))
-front_gillnet <- pareto(x, y, condition = idCombs(keep = 4))
-front_seine <- pareto(x, y, condition = idCombs(keep = 5))
 
 
 
-
-
-
-# (1) Plots: the Pareto frontiers both for all gears and for all traditional (non-eDNA) gears are potted alongside species accumulation curves for each gear independently.
-plot(front_all, xlim = c(0, effort_max), ylim = c(0, max(y)),
-     pch = 16, col = "black", type = "b",
-     xlab = "Effort", ylab = "Number of species detected")
-points(front_eDNA, pch = 16, col = "red", type = "b")
-points(front_ef, pch = 16, col = "lightgreen", type = "b")
-points(front_fyke, pch = 16, col = "green", type = "b")
-points(front_gillnet, pch = 16, col = "darkgreen", type = "b")
-points(front_seine, pch = 16, col = "lightblue", type = "b")
-points(front_trad, pch = 16, col = "purple", type = "b")
-
-
-### PICK UP HERE... UNFINISHED BEYOND THIS!!!!
-legend("topleft", legend = c("Combined eDNA and traditional", "Only eDNA", "Only traditional"),
-       pch = 16,
-       col = c("black","red","green"), cex = 0.8)
-
-
-
-# TO DO: compare each method alone to Kara's species accumulation curves (specaccum from package vegan) -- they should match up.
-# Storyline:
-
-
-
-
-
-# (2) Tables: for a given sampling effort, the optimal allocation to each survey type.
-# TO DO: Make sure this is calculated by taking the largest number of species detected not only at that effort but also any lower effort, since in general an effort of exactly E may be impossible to achieve with integer numbers of samples, or only possible with some (possibly non-optimal) gear combinations.
-
-
-
-# Methods -- outline of what to include in manuscript:
-# Exhaustive list of all possible sample combinations up to some maximum effort. For each, perform min(# possible combinations given 2017 sample numbers, r) sampling simulations by sampling 2017 data without replacement [UPDATE: as currently implemented, I simply sample r replicates with replacement, even if r > # possible sample combinations], and calculate the average (and sd, if desired) number of species detected.
-# 3. Define the Pareto frontier: the set of non-dominated solutions. Find the Pareto front for all traditional gears together, and for all gears including eDNA. Compare to the species accumulation curve for each gear independently (same as Kara's plot).
-
+# #### METHOD #1: simulated sample combinations ####
+# # NOTE: For testing purposes only. Use of Method #2 is preferred. 
+# # Perform r simulations per sampling combination and calculate the mean & stdev detected species richness
+# r <- 10 # maximum number of replicate simulations per sample combination (FEWER ONLY IF FEWER THAN r SIMULATIONS ARE POSSIBLE; NOT YET ENFORCED -- DO THIS)
+# 
+# n_spp_detected <- matrix(data = NA, nrow = length(comb_list), ncol = r) # initialize matrix to contain the numbers of species detected for each sample combination (row) and replicate (column)
+# 
+# # USEFUL OBJECTS: effort_combs, comb_list, n_spls, dat, dat_by_method
+# 
+# for(i in 1:length(comb_list)) { # for each sampling combination...
+#   n_to_select <- sapply(1:5, function(x) sum(comb_list[[i]]==x)) # number of samples per method/gear
+#   for(j in 1:r) { # for each of r replicates...
+# 
+#     for(m in 1:5) { # for each method/gear
+#       # Randomly select the appropriate number of samples for each gear
+#       if(m==1) {
+#         dat_temp <- dat_by_method[[m]][sample(n_spls[m], n_to_select[m]), ] # initialize data frame containing simulated data for the current replicate
+#       } else {
+#         dat_temp <- rbind(dat_temp, dat_by_method[[m]][sample(n_spls[m], n_to_select[m]), ])
+#       }
+#     }
+#     dat_temp <- dat_temp[ ,!colnames(dat_temp) %in% c("Method","Site")]
+#     n_spp_detected[i,j] <- sum(colSums(dat_temp) > 0) # calculate the number of species detected
+#     
+#   }
+# }
+# 
+# 
+# x <- effort_combs # effort for each sample combination
+# y <- rowSums(n_spp_detected)/r # average number of species detected
 
 
 
@@ -206,7 +166,7 @@ legend("topleft", legend = c("Combined eDNA and traditional", "Only eDNA", "Only
 ## 
 spp_names <- colnames(dat)[!colnames(dat) %in% c("Method","Site")]
 gear_names <- names(effort_per_sample)
-n_spp <- length(species_names)
+n_spp <- length(spp_names)
 n_gears <- length(unique(dat$Method))
 n_combs <- length(comb_list)
 
@@ -229,7 +189,6 @@ for(i in 1:n_spp) {
 }
 
 
-
 # Calculate multiplication factor for 56 spp X 5 methods X 377 combs
 f <- array(data = 1, dim = c(n_spp, n_gears, n_combs))
 for(k in 1:n_combs) {
@@ -246,11 +205,12 @@ for(k in 1:n_combs) {
   res[k] <- sum(1 - f[,1,k]*f[,2,k]*f[,3,k]*f[,4,k]*f[,5,k])
 }
 
-
-## PLOTTING THE EXACT METHOD -- duplicated code from above... ##
-
 x <- effort_combs # effort for each sample combination
 y <- res # expected number of species detected (exact calculation)
+
+
+
+#### CALCULATE & PLOT THE PARETO FRONTIER ####
 
 front_all <- pareto(x, y)
 front_trad <- pareto(x, y, condition = idCombs(keep = 2:5))
@@ -278,10 +238,81 @@ legend("topleft", legend = c("Combined eDNA and traditional", "Only eDNA", "Elec
        col = c("black","red","lightgreen","green","darkgreen","lightblue","purple"), cex = 0.5)
 
 
-### Exact method looks to be correct! Now identify the combinations that are on the Pareto front and characterize their composition (e.g., eDNA + a bit of seine is the best possible strategy.)
 
 
-# TO DO: Look into whether this code can be revised/improved/extended and submitted to R's vegan package, as an extension to vegan:specaccum.
+# (2) Stacked area graph: for a given sampling effort, the optimal allocation to each survey type.
+# https://r-graphics.org/recipe-line-graph-stacked-area
+# TO DO: Make sure this is calculated by taking the largest number of species detected not only at that effort but also any lower effort, since in general an effort of exactly E may be impossible to achieve with integer numbers of samples, or only possible with some (possibly non-optimal) gear combinations.
+
+### TESTING IN PROGRESS ###
+
+# Three columns: total effort, effort, method
+# First: calculate wide format -- for each total effort, the effort per gear that is optimal
+
+
+library(gcookbook) # Load gcookbook for the uspopage data set
+
+ggplot(uspopage, aes(x = Year, y = Thousands, fill = AgeGroup)) +
+  geom_area()
+
+
+
+# EVENTUALLY REPLACE pareto() above with this one, which returns a list that includes both the front x-y values and the indices of the front combinations.
+# Pareto with indices of selected combinations (to be used to identify indices of combinations that are on the Pareto front, including their order)
+pareto = function(x, y, condition = NA) {
+  d <- data.frame(x,y)
+  # indices <- 1:length(x)
+  if(!is.na(condition)[1]) {
+    d <- d[condition, ]
+    # indices <- indices[condition]
+  }
+  D <- d[order(d$x,d$y,decreasing=c(FALSE,TRUE)),]
+  # Indices <- indices[order(d$x,d$y,decreasing=c(FALSE,TRUE))]
+  front <- D[which(!duplicated(cummax(D$y))),]
+  # front_indices <- Indices[which(!duplicated(cummax(D$y)))]
+  return(list(front = front, indices = as.integer(rownames(front))))
+}
+
+test <- pareto(x = x, y = y)
+front_trad <- pareto(x, y, condition = idCombs(keep = 2:5))
+
+
+# Calculate an effort-by-gear matrix in wide format (object effort_mat)
+effort_mat <- matrix(data = NA, nrow = n_combs, ncol = n_gears)
+for(i in 1:n_combs) {
+  effort_mat[i,] <- effort_per_sample * colSums(matrix(sapply(1:5, function(x) comb_list[[i]]==x), ncol = n_gears)) # calculate effort as effort_per_sample * number of samples (for each of the 5 gears)
+}
+
+effort_df <- as.data.frame(effort_mat)
+colnames(effort_df) <- gear_names
+#effort_df$Comb <- 1:nrow(effort_df) # included in row names, so unnecessary. But a check...
+effort_df$Tot_effort <- effort_combs
+
+# Subset to gear combinations on the Pareto front
+effort_df <- effort_df[front_trad[["indices"]],]
+
+# Convert into long format
+effort_mat_long <- melt(effort_df, id.vars = "Tot_effort")
+colnames(effort_mat_long) <- c("Tot_effort", "Gear", "Effort")
+
+# Make a stacked area plot
+ggplot(effort_mat_long, aes(x = Tot_effort, y = Effort, fill = Gear)) +
+  geom_area()
+
+# TO DO: how to make clear that it's discrete, i.e., that Tot_effort increases in jumps, not continuously.
+# TO DO: streamline the above and make it into a single simple function call.
+
+# OPTIONAL: Not always the case, but here it appears that cumulative gear choices are accumulative, i.e., the solution at one effort is always obtained by adding one sample (of a certain gear) to the optimal gear choices of the next lowest effort. Check that this still holds for the final choices of gear effort per sample. If so, then the stacked area plot may be simplified to a bar plot, with the y axis indicating the accrued gear choices as you increase from low to high effort.
+
+# Methods -- outline of what to include in manuscript:
+# Exhaustive list of all possible sample combinations up to some maximum effort. For each, perform min(# possible combinations given 2017 sample numbers, r) sampling simulations by sampling 2017 data without replacement [UPDATE: as currently implemented, I simply sample r replicates with replacement, even if r > # possible sample combinations], and calculate the average (and sd, if desired) number of species detected.
+# 3. Define the Pareto frontier: the set of non-dominated solutions. Find the Pareto front for all traditional gears together, and for all gears including eDNA. Compare to the species accumulation curve for each gear independently (same as Kara's plot).
+
+
+
+
+
+
 
 
 
@@ -300,6 +331,10 @@ heatmap(detect_frac, main = "Fraction of samples in which species was detected",
 dev.off()
 
 
+
+
+
+
 library("ggplot2")
 library(reshape)
 detect_frac_melt <- melt(detect_frac)
@@ -315,3 +350,7 @@ ggp + scale_fill_gradient(low = "white", high = "black")
 #### NOTES ####
 # For both single- and multi-method rarefaction curves, >20 samples per method is preferred (see Ch. 4: Estimating species richness by Nicholas J. Gotelli and Robert K. Colwell). We're on the lower end of that for electro-fishing (8 if we aggregate by site), seines (8) and gill nets (15).
 # TO DO: What happens if total effort is greater than possible effort given limited samples of a certain type? Is this case handled appropriately?
+
+
+# TO DO: Look into whether this code can be revised/improved/extended and submitted to R's vegan package, as an extension to vegan:specaccum.
+
