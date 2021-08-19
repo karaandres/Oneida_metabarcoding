@@ -30,4 +30,4 @@ perl tax_trace.pl taxdump/nodes.dmp taxdump/names.dmp taxids.txt taxids_export.t
 
 # turn back into comma delimited, merge with blast format 10 output 
 sed 's/\t/,/g' taxids_export.txt > taxids_export.csv
-paste blstn_nonchim_fmt10_scinames_Oneida_withseq.csv taxids_export.csv > blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonomic.csv
+paste -d "," blstn_nonchim_fmt10_scinames_Oneida_withseq.csv taxids_export.csv > blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonomic.csv
