@@ -1,9 +1,9 @@
 # Get higher taxonomic information
 library(stringr)
 
-tax_export <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_output_8.25.2020/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic.csv", head=FALSE)
+tax_export <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_output_8.17.2021/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonomic.csv", head=FALSE)
 tax_export[,1] <- as.character(tax_export[,1])
-names(tax_export) <- c("seqid","pident","evalue","qstart","qend","length","sscinames","scomnames","sseq","commnames",
+names(tax_export) <- c("seqid","pident","evalue","qstart","qend","length","sscinames","scomnames","sseq","staxids","qseqid","commnames",
                        "taxinfo","taxclass")
 output <- data.frame(seqid=NA,superkingdom=NA,kingdom=NA,phylum=NA,subphylum=NA,superclass=NA,class=NA,subclass=NA,
                      infraclass=NA,cohort=NA,subcohort=NA,superorder=NA,order=NA,suborder=NA,
@@ -34,4 +34,4 @@ if ("genus" %in% df$class) {output[i,17] <- as.character(df[df$class=="genus",2]
 if ("species" %in% df$class) {output[i,18] <- as.character(df[df$class=="species",2])} else output[i,18] <- NA
 }
 output <- cbind(tax_export[,1:10], output)
-# write.csv(output, file="/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_output_8.25.2020/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv")
+# write.csv(output, file="/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_output_8.17.2021/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonomic_matched.csv")

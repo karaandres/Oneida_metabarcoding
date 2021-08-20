@@ -4,7 +4,7 @@
 ### Created 4.1.2020 by Tim Lambert, updated 9.1.2020 by Kara Andres
 
 # Read in BLAST output
-blast_dat <- read.csv(file = "/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_output_8.25.2020/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonimic_matched.csv", header = TRUE)
+blast_dat <- read.csv(file = "/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/oneida_output_8.17.2021/blstn_nonchim_fmt10_scinames_Oneida_withseq_taxonomic_matched.csv", header = TRUE)
 head(blast_dat)
 
 # Read in ASV counts by sites: columns are samples, rows are ASVs
@@ -50,8 +50,9 @@ ASV_length_range <- c(160, 192) # lengths of sequences to look at (to eliminate 
 ASV_count_by_sites <- ASV_count_by_sites[lengths > ASV_length_range[1]-1 & lengths < ASV_length_range[2]+1, ]
 
 nrow(ASV_count_by_sites) # 2982 ASVs
-nrow(ASV_count_by_sites[ASV_count_by_sites$scomnames=="AMBIGUOUS",]) # 73 abiguous matches
-nrow(ASV_count_by_sites[ASV_count_by_sites$scomnames=="NO MATCH",]) # 725 no match exceeding 98% identity
+nrow(ASV_count_by_sites[ASV_count_by_sites$scomnames=="AMBIGUOUS",]) # 113 abiguous matches
+nrow(ASV_count_by_sites[ASV_count_by_sites$scomnames=="NO MATCH",]) # 558 no match exceeding 98% identity
 
 # Write data files
 # write.csv(ASV_count_by_sites, "/Users/kbja10/Documents/Cornell/Research/Oneida/Data_analysis/Datasets/ASV_count_by_sites.csv", row.names=FALSE)
+# write.csv(ASV_count_by_sites, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/ASV_count_by_sites.csv", row.names=FALSE)

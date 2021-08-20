@@ -18,6 +18,7 @@
 "Notemigonus crysoleucas ","golden shiner",1,1,1,1,0,1
 "Notropis atherinoides ","emerald shiner",1,1,1,1,0,1
 "Notrropis hudsonius","spottail shiner",1,1,1,1,0,1
+"Percina caprodes","logperch",1,1,1,1,0,1
 "Ameiurus natalis","yellow bullhead",1,1,1,1,0,0
 "Amia calva","bowfin",1,1,1,1,0,0
 "Erimyzon oblongus","creek chubsucker",1,1,1,1,0,0
@@ -39,7 +40,6 @@
 "Rhinichthys cataractae","longnose dace",1,1,0,0,0,0
 "Semotilus atromaculatus","creek chub",1,1,0,0,0,0
 "Umbra limi","central mudminnow",1,1,0,0,0,0
-"Percina caprodes","logperch",1,0,1,1,0,1
 "Pomoxis nigromaculatus","black crappie",1,0,1,1,0,0
 "Lepisosteus osseus ","longnose gar",1,0,1,0,0,1
 "Pimephales promelas","fathead minnow",1,0,1,0,0,1
@@ -76,7 +76,7 @@
 "Salvelinus fontinalis","brook trout",1,0,0,0,0,0
 "Scardinius erythrophthalmus","rudd",1,0,0,0,0,0
 "Semotilus corpralis","fallfish",1,0,0,0,0,0
-NA,"shortnose gar",0,1,0,0,0,0
+NA,"greater redhorse",0,0,1,0,1,0
 "Etheostoma exile","Iowa darter",0,0,0,0,0,0
 "Lepomis peltastes","northern sunfish",0,0,0,0,0,0
 "Notropis bifrenatus","bridle shiner",0,0,0,0,0,0
