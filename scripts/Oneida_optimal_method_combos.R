@@ -134,7 +134,7 @@ idCombs = function(combs = comb_list, methods = 1:5, keep = 1:5) {
 
 
 
-# #### METHOD #1: simulated sample combinations ####
+# #### METHOD 1: simulated sample combinations ####
 # # NOTE: For testing purposes only. Use of Method #2 is preferred. 
 # # Perform r simulations per sampling combination and calculate the mean & stdev detected species richness
 # r <- 10 # maximum number of replicate simulations per sample combination (FEWER ONLY IF FEWER THAN r SIMULATIONS ARE POSSIBLE; NOT YET ENFORCED -- DO THIS)
@@ -168,8 +168,8 @@ idCombs = function(combs = comb_list, methods = 1:5, keep = 1:5) {
 
 
 
-#### Method 2: Exact calculation of expected number of species detected ####
-## This is analogous to the argument <method = "exact"> in specaccum() from package vegan, except it has been extended to account for combinations of multiple methods.
+#### METHOD 2: Exact calculation of expected number of species detected ####
+## This is analogous to the argument <method = "exact"> in specaccum() from package vegan, except it has been extended to account for combinations of multiple methods. It uses resampling without replacement.
 # Inputs:
 ## comb_list
 ## dat, dat_by_method
@@ -220,6 +220,9 @@ y <- expected_spp_combs # expected number of species detected (exact calculation
 
 
 
+
+
+
 #### CALCULATE & PLOT THE PARETO FRONTIER ####
 
 front_all <- pareto(x, y)
@@ -250,11 +253,9 @@ legend("topleft", legend = c("Combined eDNA and traditional", "Only eDNA", "Elec
 
 
 
-# (2) Stacked area graph: for a given sampling effort, the optimal allocation to each survey type.
+# (2) Stacked area graph
+# (i) Discrete samples: for a given sampling effort, the optimal allocation to each survey type.
 # https://r-graphics.org/recipe-line-graph-stacked-area
-
-
-
 
 
 ## Function definition: stacked_area_plot() ####
@@ -295,6 +296,57 @@ stacked_area_plot = function(pareto_front) {
 stacked_area_plot(pareto_front = front_all)
 stacked_area_plot(pareto_front = front_trad)
 
+
+
+
+
+
+
+
+#### METHOD 3: Continuous effort allocation #### UNDER CONSTRUCTION!!!
+## Observation: Optimal method combinations on the Pareto front calculated using Method 2 can be variable across small ranges of total effort. This is due to the discreteness of sample combinations for methods with different effort---e.g., given Method A with sample cost 5 and Method B with sample cost 4, Method B may be Pareto-optimal at 8 and 12 but not 10 simply because its cost per sample allows more effort to be invested in it without exceeding the total effort limit, even if its cost efficiency is lower at all 3 values.
+## Remedy: Method 3 eliminates this effect by shifting effort to a continuous scale for all methods. The expected number of species detected is interpolated between discrete numbers of samples for sampling WITH replacement (not without replacement, as in Method 2).
+
+## Function definition: expectedRichness() ##
+## Calculates the expected number of species detected given inputs:
+#    par -- vector of length n_gears-1 indicating the fraction of total effort allocated to the first four gears
+## And uses global parameters
+#    tot_effort -- the total effort expended
+#    A, n_gears, n_spp, n, effort_per_sample
+expectedRichness = function(par) {
+  b <- tot_effort * c(par, 1 - sum(par))
+  if(sum(b<0) > 0) {
+    return(-100)
+  } else {
+    A_mat <- matrix(A, ncol = n_gears, nrow = n_spp, byrow = TRUE)
+    nondet_frac <- (A_mat-n)/A_mat # (complement of detection_fraction in the heat map)
+    result <- sum(sapply(1:n_spp, function(i) 1 - prod(nondet_frac[i,]^(b/effort_per_sample))))
+    return(result)
+  }
+}
+
+# USE OPTIM to find optimal allocation to each method, given a fixed total cost.
+n_grid_pts <- 11
+tot_effort_vec <- seq(0, effort_max, length.out = n_grid_pts)
+effort_mat <- matrix(NA, nrow = n_grid_pts, ncol = n_gears); colnames(effort_mat) <- gear_names
+x_cont <- y_cont <- rep(NA, length = n_grid_pts)
+for(i in 1:n_grid_pts) {
+  tot_effort <- tot_effort_vec[i]
+  result <- optim(rep(0.2, 4), expectedRichness,  # PROBLEM : different starts yielding different answers. Improve optim() or even use ga()?
+                  control = list(fnscale = -1), # maxit = 1000, abstol = 0.001
+                  method = "BFGS")
+  result2 <- optim(rep(0, 4), expectedRichness, 
+                   control = list(fnscale = -1), # maxit = 1000, abstol = 0.001
+                   method = "BFGS")
+  if(i>1 & sum((result$par - result2$par) > 0.05) > 0) {print(result, result2); break()}
+  x_cont[i] <- tot_effort
+  y_cont[i] <- result$value
+  effort_mat[i,] <- c(result$par, 1-sum(result$par)) * tot_effort
+}
+
+plot(x_cont, y_cont)
+## Goal: produce equivalents of x, y, and comb_list from Method 2
+## Perhaps just: data frame with total effort, maximum number of species, and optimal allocation to each method (7 total columns).
 
 
 
