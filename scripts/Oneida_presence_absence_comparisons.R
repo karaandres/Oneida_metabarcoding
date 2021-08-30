@@ -69,7 +69,7 @@ fyke_dat_spp <- fyke_dat[, -grep(".sp.", colnames(fyke_dat))]
 sp_acc_fyke <- specaccum(fyke_dat_spp[,-1])
 plot(sp_acc_fyke, ci.type="poly", col=my.cols[5], lwd=3, ci.lty=0, ci.col=alpha(my.cols[5], 0.3), add=T)
 
-gillnet_dat_spp <- gillnet_dat[, -grep(".sp.", colnames(gillnet_dat))]
+gillnet_dat_spp <- gillnet_dat # no .sp. in gillnet dataset
 sp_acc_gillnet <- specaccum(gillnet_dat_spp[,-1])
 plot(sp_acc_gillnet, ci.type="poly", col=my.cols[6], lwd=3, ci.lty=0, ci.col=alpha(my.cols[6], 0.3), add=T)
 
@@ -272,10 +272,10 @@ site_comparison_ef$Richness <- rowSums(site_comparison_ef != 0) # species richne
 
 # differences/correlations between richness per site
 site_comparison_edna$Richness-site_comparison_ef$Richness
-mean(site_comparison_edna$Richness) # 21.625
-sd(site_comparison_edna$Richness) # 5.55
-mean(site_comparison_ef$Richness) # 17.875
-sd(site_comparison_ef$Richness) # 4.086
+mean(site_comparison_edna$Richness) # 19.25
+sd(site_comparison_edna$Richness) # 4.80
+mean(site_comparison_ef$Richness) # 17.125
+sd(site_comparison_ef$Richness) # 3.482
 wilcox.test(site_comparison_edna$Richness,site_comparison_ef$Richness)
 cor.test(site_comparison_edna$Richness,site_comparison_ef$Richness)
 plot(site_comparison_edna$Richness,site_comparison_ef$Richness)

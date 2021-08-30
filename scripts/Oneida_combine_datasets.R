@@ -20,10 +20,10 @@ library(stringr)
 #########################################################################
 
 # eDNA dataset
-to_replace <- c(" ","Ambloplites.rupestris","Gobius","Labidesthes","northern.hog.sucker","Percopsis.omiscomaycus","pumpkinseed.sunfish","tessallated.darter",
-                "Cottidae","Cyprinidae","Cyprinus","Luxilus","Notropis","Percina","blacktip.jumprock")
-replace_with <- c("\\.","rock.bass","round.goby","brook.silverside","northern.hogsucker","trout.perch","pumpkinseed","tessellated.darter",
-                  "Cottidae.sp.","Cyprinidae.sp.","Cyprinus.sp.","Luxilus.sp.","Notropis.sp.","Percina.sp.","greater.redhorse")
+to_replace <- c(" ","Ambloplites.rupestris","northern.hog.sucker","Percopsis.omiscomaycus","pumpkinseed.sunfish","tessallated.darter",
+                "Cottidae","Cyprinidae","Cyprinus","Luxilus","Notropis","Percina","Lepisosteus")
+replace_with <- c("\\.","rock.bass","northern.hogsucker","trout.perch","pumpkinseed","tessellated.darter",
+                  "Cottidae.sp.","Cyprinidae.sp.","Cyprinus.sp.","Luxilus.sp.","Notropis.sp.","Percina.sp.","Lepisosteus.sp.")
 names(replace_with) <- to_replace
 sp_read_count_by_site$scomnames <- str_replace_all(sp_read_count_by_site$scomnames, replace_with)
 eDNA_dat <- t(as.matrix(sp_read_count_by_site[,-c(1:4)])) # transpose to create community dataset
@@ -35,12 +35,12 @@ write.csv(eDNA_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/eDNA_dat
 
 # Electrofishing dataset
 to_replace <- c("chubsucker","gizzard.shad","killifish","lepomis","pumpkinseedXgreen.sunfish","redhorse","unknown.shiner")
-replace_with <- c("creek.chubsucker","American.gizzard.shad","banded.killifish","Lepomis.1","Lepomis.2","Moxostoma.sp.","Notropis.sp.")
+replace_with <- c("creek.chubsucker","American.gizzard.shad","banded.killifish","Lepomis.1","Lepomis.2","greater redhorse","Notropis.sp.")
 names(replace_with) <- to_replace
 colnames(ef_dat) <- str_replace_all(colnames(ef_dat), replace_with)
 ef_dat <- ef_dat %>% mutate(Lepomis.sp.=Lepomis.1+Lepomis.2, .keep = "unused")
 # Collapse reads/species counts by site (multiple EF passes)
-ef_dat$Site <- gsub(" [[:digit:]]+", "", ef_dat_sites$Site) # remove pass number 
+ef_dat$Site <- gsub(" [[:digit:]]+", "", ef_dat$Site) # remove pass number 
 # ef_dat <- as.data.frame(ef_dat %>% 
 #                                 group_by(Site) %>% 
 #                                 summarise(across(where(is.numeric), sum)))
@@ -53,7 +53,7 @@ fyke_dat <- fyke_dat %>%
   mutate(walleye=walleye+walleye.YOY, .keep = "unused") %>%
   mutate(yellow.perch=yellow.perch+yellow.perch.YOY, .keep = "unused")
 to_replace <- c("american.eel","Cisco","Common.carp","darter","gizzard.shad","redhorse")
-replace_with <- c("American.eel","cisco","common.carp","Etheostoma.sp.","American.gizzard.shad","Moxostoma.sp.")
+replace_with <- c("American.eel","cisco","common.carp","Etheostoma.sp.","American.gizzard.shad","greater redhorse")
 names(replace_with) <- to_replace
 colnames(fyke_dat) <- str_replace_all(colnames(fyke_dat), replace_with)
 fyke_dat$Other
@@ -74,7 +74,7 @@ write.csv(fyke_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/fyke_dat
 
 # Gill net dataset
 to_replace <- c("gizzard.shad","redhorse.sp.","tiger.muskellunge")
-replace_with <- c("American.gizzard.shad","Moxostoma.sp.","tiger.musky")
+replace_with <- c("American.gizzard.shad","greater redhorse","tiger.musky")
 names(replace_with) <- to_replace
 colnames(gillnet_dat) <- str_replace_all(colnames(gillnet_dat), replace_with)
 gillnet_dat <- gillnet_dat %>% select(Site, walleye:round.goby)
@@ -157,3 +157,4 @@ all_methods_presence$species <- gsub("\\.", " ", all_methods_presence$species)
 colnames(all_methods_presence) <- c("Scientific name","Common name","Historical","eDNA","Electrofishing",
                                     "Fyke net","Gill net","Seine")
 write.csv(all_methods_presence, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/all_methods_presence.csv", row.names=FALSE)
+
