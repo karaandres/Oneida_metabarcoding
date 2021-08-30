@@ -5,9 +5,9 @@
 "Fundulidae","Fundulus","banded killifish","Fundulus diaphanus",57277,0,2200,1160,0,0,47072,0,0,0,1784,0,515,0,0,65876,5958,13087,0,0,0,0,1516,0,0,4114,1975,15368,9272
 "Cyprinidae","Rhinichthys","blacknose dace","Rhinichthys atratulus",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3036,0,0,0,0,0,0,0,0,0,0,0,0
 "Cyprinidae","Notropis","blacknose shiner","Notropis heterolepis",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6033,0,0,0,0,0,0,0,0,0,0,0,0
-"Catostomidae","Moxostoma","blacktip jumprock","Moxostoma cervinum",0,0,21537,0,0,10624,0,1744,743,322,3195,0,0,2013,0,0,0,0,0,0,0,0,0,0,208,0,0,165879,0
 "Centrarchidae","Lepomis","bluegill","Lepomis macrochirus",0,0,0,0,0,0,14730,0,1756,689,0,0,0,0,0,0,5239,2661,0,56749,40635,12571,5314,4324,759,267,0,0,0
 "Amiidae","Amia","bowfin","Amia calva",0,13262,0,0,0,0,26251,0,0,0,0,0,0,0,0,0,0,4193,0,32969,2302,18681,0,367,242,0,1351,0,12895
+"Atherinopsidae","Labidesthes","brook silverside","Labidesthes sicculus",0,5084,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2329,311,0,0,0,0,0
 "Gasterosteidae","Culaea","brook stickleback","Culaea inconstans",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1327,0,0,310,0,0,0,0
 "Ictaluridae","Ameiurus","brown bullhead","Ameiurus nebulosus",72801,27207,3906,3615,0,0,70414,0,0,0,3514,6411,2278,216,825,0,11848,0,0,5189,539,0,1041,416,0,677,9474,13772,7190
 "Lotidae","Lota","burbot","Lota lota",0,0,0,0,0,0,0,0,0,0,0,0,0,878,0,0,0,4169,0,0,0,0,0,0,0,0,0,0,0
@@ -23,21 +23,22 @@
 "Cyprinidae","Notropis","emerald shiner","Notropis atherinoides",4668,0,0,0,250209,0,6937,0,867,252,12137,8560,0,374,0,0,122384,0,0,0,0,0,0,0,341,0,0,0,0
 "Percidae","Etheostoma","fantail darter","Etheostoma flabellare",0,0,0,0,0,0,0,0,0,1893,0,0,0,0,0,0,46738,0,0,0,0,0,0,0,134,0,0,0,0
 "Sciaenidae","Aplodinotus","freshwater drum","Aplodinotus grunniens",39206,15621,111018,3905,111497,48391,45475,0,2355,1340,18785,2883,1046,10077,3443,1626964,44458,95838,1182384,1200,8731,0,48775,296,904,17991,32769,350879,51186
-"Gobiidae","Gobius","Gobius","Gobius",35847,24996,20272,38664,18681,110362,0,1159,1352,0,15893,21323,7744,17542,5806,8362,128762,67657,3558,2214,0,0,1481,0,1376,950,18453,34077,102063
 "Cyprinidae","Notemigonus","golden shiner","Notemigonus crysoleucas",0,0,0,0,0,0,14912,0,0,0,0,0,0,0,0,0,3742,0,0,1063,484,721,0,315,153,1267,0,0,0
+"Catostomidae","Moxostoma","greater redhorse","Moxostoma valenciennesi",0,0,21537,0,0,10624,0,1744,743,322,3195,0,0,2013,0,0,0,0,0,0,0,0,0,0,208,0,0,165879,0
 "Centrarchidae","Lepomis","green sunfish","Lepomis cyanellus",0,0,0,0,0,0,0,5314,2420,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,199,254,0,0,0
-"Atherinopsidae","Labidesthes","Labidesthes","Labidesthes",0,5084,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2329,311,0,0,0,0,0
 "Acipenseridae","Acipenser","lake sturgeon","Acipenser fulvescens",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12291,0,0,0,0,0,0,0,0,0,0,0,0
 "Centrarchidae","Micropterus","largemouth bass","Micropterus salmoides",16396,0,0,10890,0,4898,65278,0,0,0,0,0,0,0,0,0,21986,5866,0,15995,4150,3328,4143,3033,148,2635,4174,5509,113348
+"Lepisosteidae","Lepisosteus","Lepisosteus","Lepisosteus",432593,0,0,2418,0,0,16019,1446,1887,0,36204,760,0,0,1332,0,26760,192367,0,0,0,0,2051,0,0,90351,22506,0,0
+"Percidae","Percina","logperch","Percina caprodes",0,0,22361,3020,21617,33883,0,6863,7144,931,0,611,215,339,0,0,175450,9072,0,0,0,0,0,0,3965,0,0,62882,35150
 "Cyprinidae","Rhinichthys","longnose dace","Rhinichthys cataractae",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,160,0,0,0,0
 "Cyprinidae","Luxilus","Luxilus","Luxilus",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9711,0,0,0,0,0,0,0,0,0,0,0,0
 "Catostomidae","Hypentelium","northern hog sucker","Hypentelium nigricans",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9333,0,0,0,0,0,0,0,76,0,0,0,0
 "Esocidae","Esox","northern pike","Esox lucius",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,137068,0,0,0,0,0,0,0,1824,1177,0,0,0
 "Cyprinidae","Notropis","Notropis","Notropis",0,0,0,0,0,0,0,0,0,1442,0,0,0,177,0,0,177083,14248,0,0,0,0,0,0,0,0,0,0,0
-"Percidae","Percina","Percina","Percina",0,0,22361,3020,21617,33883,0,6863,7144,931,0,611,215,339,0,0,181453,9072,0,0,0,0,0,0,4129,0,0,62882,35150
+"Percidae","Percina","Percina","Percina",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6003,0,0,0,0,0,0,0,164,0,0,0,0
 "Percopsidae","Percopsis","Percopsis omiscomaycus","Percopsis omiscomaycus",0,0,0,0,0,49538,0,0,0,0,0,0,1566,0,0,0,0,42862,0,0,0,0,0,0,0,0,0,0,0
 "Centrarchidae","Lepomis","pumpkinseed sunfish","Lepomis gibbosus",50367,67579,943,2081,0,7531,47496,4424,1214,1532,4987,0,343,338,170,0,139550,56662,13139,75894,25424,24715,10670,14019,817,11425,13953,0,16352
-"Lepisosteidae","Lepisosteus","shortnose gar","Lepisosteus platostomus",432593,0,0,2418,0,0,16019,1446,1887,0,36204,760,0,0,1332,0,26760,192367,0,0,0,0,2051,0,0,90351,22506,0,0
+"Gobiidae","Neogobius","round goby","Neogobius melanostomus",35847,24996,20272,38664,18681,110362,0,1159,1352,0,15893,21323,7744,17542,5806,8362,128762,67657,3558,2214,0,0,1481,0,1376,950,18453,34077,102063
 "Centrarchidae","Micropterus","smallmouth bass","Micropterus dolomieu",41312,7350,1127,8631,12421,31692,7153,4602,2414,979,3313,2014,1653,1688,1688,0,57665,14370,12660,0,0,0,0,0,1310,4123,13293,11532,93537
 "Cyprinidae","Notropis","spottail shiner","Notropis hudsonius",0,0,0,0,0,0,0,0,0,0,0,0,123,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 "Percidae","Etheostoma","tessallated darter","Etheostoma olmstedi",0,0,0,0,0,0,0,0,0,405,0,0,0,0,0,0,14293,0,0,0,0,0,0,0,671,0,0,0,0
