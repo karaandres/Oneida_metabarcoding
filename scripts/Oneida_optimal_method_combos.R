@@ -1,7 +1,7 @@
 ### Optimal method combinations for surveying Oneida Lake fishes
 ### This code identifies the Pareto-optimal combination of methods (gears) to survey fish communities. Specifically, it resamples 2017 eDNA, electrofishing, fyke net, gill net, and seine net data from Oneida lake to estimate how to allocate effort among gears in a way that maximizes the mean number of species detected. The Pareto frontiers are calculated for combinations of all methods as well as for combinations of only traditional (non-eDNA) methods, and both are compared to species accumulation curves for each gear alone.
 ### Inputs: standardized 2017 gear files (eDNA_dat.csv, ef_dat.csv, fyke_dat.csv, gillnet_dat.csv, and seine_dat.csv).
-### Outputs: (1) The Pareto frontiers for all gears and for all traditional gears, potted alongside species accumulation curves for each gear independently. (2) Stacked area plots indicating the optimal allocation to each survey type.
+### Outputs: (1) The Pareto frontiers for all gears and for all traditional gears, potted alongside species accumulation curves for each gear independently. (2) Stacked area plots indicating the optimal allocation to each survey type, using two alternative approaches: (i) taking discrete samples via resampling without replacement, and (ii) an extension to continuous effort by interpolation of resampling with replacement.
 ### Created by T. Lambert
 
 
@@ -131,6 +131,29 @@ idCombs = function(combs = comb_list, methods = 1:5, keep = 1:5) {
 
 
 
+#### FUNCTION DEFINITION: conv_hull() ####
+## (Code adapted from https://stats.stackexchange.com/questions/11919/convex-hull-in-r.)
+## Inputs:
+##   front: a list returned by front, with first element a dataframe containing the x-y values of the Pareto frontier and second element indicating their indices in the original combination list.
+## Outputs:
+##   hull: a list analogous to front, but only retaining those points on the convex hull of the front
+conv_hull <- function(front) {
+  require(grDevices)
+  df <- front$front # store data frame of x and y values
+  con.hull.pos <- chull(df) # find positions of convex hull
+  hull <- list(hull = df[con.hull.pos,], # coordinates of the convex hull
+               indices = front$indices[con.hull.pos]) # indices of the convex hull (in the original combination list, not in the front)
+  return(hull)
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -234,6 +257,7 @@ front_gillnet <- pareto(x, y, condition = idCombs(keep = 4))
 front_seine <- pareto(x, y, condition = idCombs(keep = 5))
 
 
+
 # Plots: the Pareto frontiers both for all gears and for all traditional (non-eDNA) gears are potted alongside species accumulation curves for each gear independently.
 plot(front_all$front, xlim = c(0, effort_max), ylim = c(0, max(y)),
      pch = 16, col = "black", type = "b",
@@ -253,10 +277,37 @@ legend("topleft", legend = c("Combined eDNA and traditional", "Only eDNA", "Elec
 
 
 
-# (2) Stacked area graph
+
+#### Convex hulls of Pareto frontiers ####
+## Addition: calculate the convex hull
+## Enforce concavity of the Pareto frontier by eliminating points that are dominated by linear combination of other points. The aim is to reduce noise in the optimal gear allocation plots. (See continuous version for an alternative remedy to this problem.)
+
+hull_all <- conv_hull(front_all)
+hull_trad <- conv_hull(front_trad)
+
+# Plots: the convex hulls of Pareto frontiers -- otherwise same as the last plot
+plot(hull_all$hull, xlim = c(0, effort_max), ylim = c(0, max(y)),
+     pch = 16, col = "black", type = "b",
+     xlab = "Effort", ylab = "Number of species detected",
+     main = "Pareto frontiers for combined-method surveys")
+points(front_eDNA$front, pch = 16, col = "red", type = "b")
+points(front_ef$front, pch = 16, col = "lightgreen", type = "b")
+points(front_fyke$front, pch = 16, col = "green", type = "b")
+points(front_gillnet$front, pch = 16, col = "darkgreen", type = "b")
+points(front_seine$front, pch = 16, col = "lightblue", type = "b")
+points(hull_trad$hull, pch = 16, col = "purple", type = "b")
+
+legend("topleft", legend = c("Combined eDNA and traditional", "Only eDNA", "Electrofishing", "Fyke", "Gillnet", "Seine", "Combined traditional"),
+       pch = 16,
+       col = c("black","red","lightgreen","green","darkgreen","lightblue","purple"), cex = 0.5)
+
+
+
+
+# (2) Stacked area graph -- optimal gear allocation
 # (i) Discrete samples: for a given sampling effort, the optimal allocation to each survey type.
 # https://r-graphics.org/recipe-line-graph-stacked-area
-
+library(ggplot2)
 
 ## Function definition: stacked_area_plot() ####
 # Finds and plots the optimal method combinations for a given Pareto front.
@@ -306,6 +357,7 @@ stacked_area_plot(pareto_front = front_trad)
 #### METHOD 3: Continuous effort allocation #### UNDER CONSTRUCTION!!!
 ## Observation: Optimal method combinations on the Pareto front calculated using Method 2 can be variable across small ranges of total effort. This is due to the discreteness of sample combinations for methods with different effort---e.g., given Method A with sample cost 5 and Method B with sample cost 4, Method B may be Pareto-optimal at 8 and 12 but not 10 simply because its cost per sample allows more effort to be invested in it without exceeding the total effort limit, even if its cost efficiency is lower at all 3 values.
 ## Remedy: Method 3 eliminates this effect by shifting effort to a continuous scale for all methods. The expected number of species detected is interpolated between discrete numbers of samples for sampling WITH replacement (not without replacement, as in Method 2).
+## Note: Taking the convex hull of the Pareto front is another possible remedy that does not require generalizations to continuous effort. See above.
 
 ## Function definition: expectedRichness() ##
 ## Calculates the expected number of species detected given inputs:
@@ -347,6 +399,8 @@ for(i in 1:n_grid_pts) {
 plot(x_cont, y_cont)
 ## Goal: produce equivalents of x, y, and comb_list from Method 2
 ## Perhaps just: data frame with total effort, maximum number of species, and optimal allocation to each method (7 total columns).
+
+
 
 
 
