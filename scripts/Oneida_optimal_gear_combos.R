@@ -343,7 +343,7 @@ library(ggplot2)
 ##     pareto_front
 ##     gears: vector of gears to include (e.g., leave out eDNA if doing a traditional gear analysis)
 
-stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet","seine"), ...) {
+stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet","seine")) {
   
   # Calculate an effort-by-gear matrix in wide format (object effort_mat)
   effort_mat <- matrix(data = NA, nrow = n_combs, ncol = n_gears)
@@ -370,7 +370,8 @@ stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet
   
   # Make a stacked area plot
   ggplot(effort_mat_long, aes(x = Tot_effort, y = Effort, fill = Gear)) +
-    geom_area()
+    geom_area() +
+    xlab("Total effort (work hours)") + ylab("Optimal gear combination (work hours)")
   # TO DO: remove eDNA legend box from traditional samples plot.
   
 }
@@ -383,10 +384,12 @@ stacked_area_plot(pareto_front = front_trad)
 # Stacked area plots for convex hulls of Pareto fronts
 # (optimal gear allocation vs. total effort is smoother, but still some noise for reasons described below)
 stacked_area_plot(pareto_front = hull_all)
-stacked_area_plot(pareto_front = hull_trad)
+stacked_area_plot(pareto_front = hull_trad, gears = c("ef","fyke","gillnet","seine"))
 
+## SAVED FIGURE -- for all gears, with convex hull of Pareto front ##
 pdf(here("figures","stackedAreaPlot_convexPareto_allGears.pdf"), width = 5, height = 5)
-
+stacked_area_plot(pareto_front = hull_all)
+dev.off()
 
 
 
