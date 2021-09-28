@@ -35,7 +35,7 @@ write.csv(eDNA_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/eDNA_dat
 
 # Electrofishing dataset
 to_replace <- c("chubsucker","gizzard.shad","killifish","lepomis","pumpkinseedXgreen.sunfish","redhorse","unknown.shiner")
-replace_with <- c("creek.chubsucker","American.gizzard.shad","banded.killifish","Lepomis.1","Lepomis.2","greater redhorse","Notropis.sp.")
+replace_with <- c("creek.chubsucker","American.gizzard.shad","banded.killifish","Lepomis.1","Lepomis.2","greater.redhorse","Notropis.sp.")
 names(replace_with) <- to_replace
 colnames(ef_dat) <- str_replace_all(colnames(ef_dat), replace_with)
 ef_dat <- ef_dat %>% mutate(Lepomis.sp.=Lepomis.1+Lepomis.2, .keep = "unused")
@@ -53,7 +53,7 @@ fyke_dat <- fyke_dat %>%
   mutate(walleye=walleye+walleye.YOY, .keep = "unused") %>%
   mutate(yellow.perch=yellow.perch+yellow.perch.YOY, .keep = "unused")
 to_replace <- c("american.eel","Cisco","Common.carp","darter","gizzard.shad","redhorse")
-replace_with <- c("American.eel","cisco","common.carp","Etheostoma.sp.","American.gizzard.shad","greater redhorse")
+replace_with <- c("American.eel","cisco","common.carp","Etheostoma.sp.","American.gizzard.shad","greater.redhorse")
 names(replace_with) <- to_replace
 colnames(fyke_dat) <- str_replace_all(colnames(fyke_dat), replace_with)
 fyke_dat$Other
@@ -74,7 +74,7 @@ write.csv(fyke_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/fyke_dat
 
 # Gill net dataset
 to_replace <- c("gizzard.shad","redhorse.sp.","tiger.muskellunge")
-replace_with <- c("American.gizzard.shad","greater redhorse","tiger.musky")
+replace_with <- c("American.gizzard.shad","greater.redhorse","tiger.musky")
 names(replace_with) <- to_replace
 colnames(gillnet_dat) <- str_replace_all(colnames(gillnet_dat), replace_with)
 gillnet_dat <- gillnet_dat %>% select(Site, walleye:round.goby)

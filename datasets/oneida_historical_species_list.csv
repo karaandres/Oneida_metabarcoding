@@ -1,48 +1,48 @@
 ﻿scomnames,species ,since_1990
-lake sturgeon,Acipenser fulvescens ,1
-blueback herring,Alosa aestivalis ,1
+lake sturgeon,Acipenser fulvescens,1
+blueback herring,Alosa aestivalis,1
 alewife,Alosa pseudoharengus,1
 rock bass,Ambloplites rupestris,1
 yellow bullhead,Ameiurus natalis,1
 brown bullhead,Ameiurus nebulosus,1
 bowfin,Amia calva,1
-American eel,Anguilla rostrata ,1
+American eel,Anguilla rostrata,1
 freshwater drum,Aplodinotus grunniens,1
-central stoneroller,Campostoma anomalum ,1
-goldfish,Carassius auratus ,1
+central stoneroller,Campostoma anomalum,1
+goldfish,Carassius auratus,1
 longnose sucker,Catostomus catostomus,1
 white sucker,Catostomus commersonii,1
-redside dace,Clinostomus elongatus ,1
+redside dace,Clinostomus elongatus,1
 cisco,Coregonus artedi,1
 mottled sculpin,Cottus bairdi,1
 slimy sculpin,Cottus cognatus,1
 brook stickleback,Culaea inconstans,1
-satinfin shiner,Cyprinella analostana ,1
-spotfin shiner,Cyprinella spiloptera ,1
-common carp,Cyprinus carpio ,1
+satinfin shiner,Cyprinella analostana,1
+spotfin shiner,Cyprinella spiloptera,1
+common carp,Cyprinus carpio,1
 American gizzard shad,Dorosoma cepedianum,1
 creek chubsucker,Erimyzon oblongus,1
 northern pike,Esox lucius,1
-tiger musky,Esox lucius x Esox masquinongy ,1
+tiger musky,Esox lucius x Esox masquinongy,1
 chain pickerel,Esox niger,1
 Iowa darter,Etheostoma exile,0
 fantail darter,Etheostoma flabellare,1
 tessellated darter,Etheostoma olmstedi,1
-cutlips minnow,Exoglossum maxillingua ,1
+cutlips minnow,Exoglossum maxillingua,1
 banded killifish,Fundulus diaphanus,1
-brassy minnow,Hybognathus hankinsoni ,1
-eastern silvery minnow,Hybognathus regius ,1
+brassy minnow,Hybognathus hankinsoni,1
+eastern silvery minnow,Hybognathus regius,1
 northern hogsucker,Hypentelium nigricans,1
 channel catfish,Ictalurus punctatus,1
 brook silverside,Labidesthes sicculus,1
-longnose gar,Lepisosteus osseus ,1
+longnose gar,Lepisosteus osseus,1
 green sunfish,Lepomis cyanellus,1
 pumpkinseed,Lepomis gibbosus,1
 bluegill,Lepomis macrochirus,1
 northern sunfish,Lepomis peltastes,0
 burbot,Lota lota,1
-common shiner,Luxilus cornutus ,1
-pearl dace,Margariscus margarita ,1
+common shiner,Luxilus cornutus,1
+pearl dace,Margariscus margarita,1
 smallmouth bass,Micropterus dolomieu,1
 largemouth bass,Micropterus salmoides,1
 white perch,Morone americana,1
@@ -50,9 +50,9 @@ white bass,Morone chrysops,1
 shorthead redhorse,Moxostoma macrolepidotum,1
 greater redhorse,Moxostoma valenciennesi,1
 round goby,Neogobius melanostomus,1
-hornyhead chub,Nocomis biguttatus ,1
-golden shiner,Notemigonus crysoleucas ,1
-emerald shiner,Notropis atherinoides ,1
+hornyhead chub,Nocomis biguttatus,1
+golden shiner,Notemigonus crysoleucas,1
+emerald shiner,Notropis atherinoides,1
 bridle shiner,Notropis bifrenatus,0
 bigmouth shiner,Notropis dorsalis,0
 blackchin shiner,Notropis heterodon,0
@@ -69,7 +69,7 @@ yellow perch,Perca flavescens,1
 logperch,Percina caprodes,1
 blackside darter,Percina maculata,1
 trout perch,Percopsis omiscomaycus,1
-sea lamprey,Petromyzon marinus ,1
+sea lamprey,Petromyzon marinus,1
 bluntnose minnow,Pimephales notatus,1
 fathead minnow,Pimephales promelas,1
 white crappie,Pomoxis annularis,0

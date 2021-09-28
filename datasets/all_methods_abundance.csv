@@ -48,7 +48,7 @@
 "white.perch",1,21.363319643952,4,84,250,254
 "white.bass",1,0,0,0,0,0
 "shorthead.redhorse",1,0,0,0,0,0
-"greater.redhorse",1,13.8638628190806,0,0,0,0
+"greater.redhorse",1,13.8638628190806,4,0,3,0
 "round.goby",1,101.917061029102,172,537,1,983
 "hornyhead.chub",1,0,0,0,0,0
 "golden.shiner",1,2.36619050161969,48,2,0,430
@@ -84,4 +84,3 @@
 "creek.chub",1,0.302432820698701,0,0,0,0
 "fallfish",1,0,0,0,0,0
 "central.mudminnow",1,3.73018693219333,0,0,0,0
-"greater redhorse",0,0,4,0,3,0

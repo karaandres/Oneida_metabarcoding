@@ -1,87 +1,86 @@
-"Scientific name","Common name","Historical","eDNA","Electrofishing","Fyke net","Gill net","Seine"
-"Ambloplites rupestris","rock bass",1,1,1,1,1,1
-"Ameiurus nebulosus","brown bullhead",1,1,1,1,1,1
-"Aplodinotus grunniens","freshwater drum",1,1,1,1,1,1
-"Catostomus commersonii","white sucker",1,1,1,1,1,1
-"Dorosoma cepedianum","American gizzard shad",1,1,1,1,1,1
-"Esox niger","chain pickerel",1,1,1,1,1,1
-"Lepomis gibbosus","pumpkinseed",1,1,1,1,1,1
-"Micropterus dolomieu","smallmouth bass",1,1,1,1,1,1
-"Morone americana","white perch",1,1,1,1,1,1
-"Neogobius melanostomus","round goby",1,1,1,1,1,1
-"Perca flavescens","yellow perch",1,1,1,1,1,1
-"Sander vitreus","walleye",1,1,1,1,1,1
-"Fundulus diaphanus","banded killifish",1,1,1,1,0,1
-"Lepomis cyanellus","green sunfish",1,1,1,1,0,1
-"Lepomis macrochirus","bluegill",1,1,1,1,0,1
-"Micropterus salmoides","largemouth bass",1,1,1,1,0,1
-"Notemigonus crysoleucas ","golden shiner",1,1,1,1,0,1
-"Notropis atherinoides ","emerald shiner",1,1,1,1,0,1
-"Notrropis hudsonius","spottail shiner",1,1,1,1,0,1
-"Percina caprodes","logperch",1,1,1,1,0,1
-"Ameiurus natalis","yellow bullhead",1,1,1,1,0,0
-"Amia calva","bowfin",1,1,1,1,0,0
-"Erimyzon oblongus","creek chubsucker",1,1,1,1,0,0
-"Lota lota","burbot",1,1,1,1,0,0
-"Cyprinus carpio ","common carp",1,1,1,0,0,1
-"Labidesthes sicculus","brook silverside",1,1,1,0,0,1
-"Percopsis omiscomaycus","trout perch",1,1,1,0,0,0
-"Acipenser fulvescens ","lake sturgeon",1,1,0,0,1,0
-"Ictalurus punctatus","channel catfish",1,1,0,0,1,0
-"Alosa pseudoharengus","alewife",1,1,0,0,0,0
-"Culaea inconstans","brook stickleback",1,1,0,0,0,0
-"Esox lucius","northern pike",1,1,0,0,0,0
-"Etheostoma flabellare","fantail darter",1,1,0,0,0,0
-"Etheostoma olmstedi","tessellated darter",1,1,0,0,0,0
-"Hypentelium nigricans","northern hogsucker",1,1,0,0,0,0
-"Moxostoma valenciennesi","greater redhorse",1,1,0,0,0,0
-"Notropis heterolepis","blacknose shiner",1,1,0,0,0,0
-"Rhinichthys atratulus","blacknose dace",1,1,0,0,0,0
-"Rhinichthys cataractae","longnose dace",1,1,0,0,0,0
-"Semotilus atromaculatus","creek chub",1,1,0,0,0,0
-"Umbra limi","central mudminnow",1,1,0,0,0,0
-"Pomoxis nigromaculatus","black crappie",1,0,1,1,0,0
-"Lepisosteus osseus ","longnose gar",1,0,1,0,0,1
-"Pimephales promelas","fathead minnow",1,0,1,0,0,1
-"Cyprinella analostana ","satinfin shiner",1,0,0,1,0,1
-"Pimephales notatus","bluntnose minnow",1,0,0,1,0,1
-"Hybognathus hankinsoni ","brassy minnow",1,0,0,0,0,1
-"Alosa aestivalis ","blueback herring",1,0,0,0,0,0
-"Anguilla rostrata ","American eel",1,0,0,0,0,0
-"Campostoma anomalum ","central stoneroller",1,0,0,0,0,0
-"Carassius auratus ","goldfish",1,0,0,0,0,0
-"Catostomus catostomus","longnose sucker",1,0,0,0,0,0
-"Clinostomus elongatus ","redside dace",1,0,0,0,0,0
-"Coregonus artedi","cisco",1,0,0,0,0,0
-"Cottus bairdi","mottled sculpin",1,0,0,0,0,0
-"Cottus cognatus","slimy sculpin",1,0,0,0,0,0
-"Cyprinella spiloptera ","spotfin shiner",1,0,0,0,0,0
-"Esox lucius x Esox masquinongy ","tiger musky",1,0,0,0,0,0
-"Exoglossum maxillingua ","cutlips minnow",1,0,0,0,0,0
-"Hybognathus regius ","eastern silvery minnow",1,0,0,0,0,0
-"Luxilus cornutus ","common shiner",1,0,0,0,0,0
-"Margariscus margarita ","pearl dace",1,0,0,0,0,0
-"Morone chrysops","white bass",1,0,0,0,0,0
-"Moxostoma macrolepidotum","shorthead redhorse",1,0,0,0,0,0
-"Nocomis biguttatus ","hornyhead chub",1,0,0,0,0,0
-"Notropis rubellus","rosyface shiner",1,0,0,0,0,0
-"Notropis stramineus","sand shiner",1,0,0,0,0,0
-"Noturus flavus","stonecat",1,0,0,0,0,0
-"Noturus insignis","margined madtom",1,0,0,0,0,0
-"Oncorhynchus mykiss","rainbow trout",1,0,0,0,0,0
-"Percina maculata","blackside darter",1,0,0,0,0,0
-"Petromyzon marinus ","sea lamprey",1,0,0,0,0,0
-"Salmo salar","Atlantic salmon",1,0,0,0,0,0
-"Salmo trutta","brown trout",1,0,0,0,0,0
-"Salvelinus fontinalis","brook trout",1,0,0,0,0,0
-"Scardinius erythrophthalmus","rudd",1,0,0,0,0,0
-"Semotilus corpralis","fallfish",1,0,0,0,0,0
-NA,"greater redhorse",0,0,1,0,1,0
-"Etheostoma exile","Iowa darter",0,0,0,0,0,0
-"Lepomis peltastes","northern sunfish",0,0,0,0,0,0
-"Notropis bifrenatus","bridle shiner",0,0,0,0,0,0
-"Notropis dorsalis","bigmouth shiner",0,0,0,0,0,0
-"Notropis heterodon","blackchin shiner",0,0,0,0,0,0
-"Noturus gyrinus","tadpole madtom",0,0,0,0,0,0
-"Noturus miurus","brindled madtom",0,0,0,0,0,0
-"Pomoxis annularis","white crappie",0,0,0,0,0,0
+Scientific name,Common name,Historical,eDNA,Electrofishing,Fyke net,Gill net,Seine
+Ambloplites rupestris,rock bass,1,1,1,1,1,1
+Ameiurus nebulosus,brown bullhead,1,1,1,1,1,1
+Aplodinotus grunniens,freshwater drum,1,1,1,1,1,1
+Catostomus commersonii,white sucker,1,1,1,1,1,1
+Dorosoma cepedianum,American gizzard shad,1,1,1,1,1,1
+Esox niger,chain pickerel,1,1,1,1,1,1
+Lepomis gibbosus,pumpkinseed,1,1,1,1,1,1
+Micropterus dolomieu,smallmouth bass,1,1,1,1,1,1
+Morone americana,white perch,1,1,1,1,1,1
+Neogobius melanostomus,round goby,1,1,1,1,1,1
+Perca flavescens,yellow perch,1,1,1,1,1,1
+Sander vitreus,walleye,1,1,1,1,1,1
+Fundulus diaphanus,banded killifish,1,1,1,1,0,1
+Lepomis cyanellus,green sunfish,1,1,1,1,0,1
+Lepomis macrochirus,bluegill,1,1,1,1,0,1
+Micropterus salmoides,largemouth bass,1,1,1,1,0,1
+Notemigonus crysoleucas,golden shiner,1,1,1,1,0,1
+Notropis atherinoides,emerald shiner,1,1,1,1,0,1
+Notrropis hudsonius,spottail shiner,1,1,1,1,0,1
+Percina caprodes,logperch,1,1,1,1,0,1
+Ameiurus natalis,yellow bullhead,1,1,1,1,0,0
+Amia calva,bowfin,1,1,1,1,0,0
+Erimyzon oblongus,creek chubsucker,1,1,1,1,0,0
+Lota lota,burbot,1,1,1,1,0,0
+Moxostoma valenciennesi,greater redhorse,1,1,1,0,1,0
+Cyprinus carpio,common carp,1,1,1,0,0,1
+Labidesthes sicculus,brook silverside,1,1,1,0,0,1
+Percopsis omiscomaycus,trout perch,1,1,1,0,0,0
+Acipenser fulvescens,lake sturgeon,1,1,0,0,1,0
+Ictalurus punctatus,channel catfish,1,1,0,0,1,0
+Alosa pseudoharengus,alewife,1,1,0,0,0,0
+Culaea inconstans,brook stickleback,1,1,0,0,0,0
+Esox lucius,northern pike,1,1,0,0,0,0
+Etheostoma flabellare,fantail darter,1,1,0,0,0,0
+Etheostoma olmstedi,tessellated darter,1,1,0,0,0,0
+Hypentelium nigricans,northern hogsucker,1,1,0,0,0,0
+Notropis heterolepis,blacknose shiner,1,1,0,0,0,0
+Rhinichthys atratulus,blacknose dace,1,1,0,0,0,0
+Rhinichthys cataractae,longnose dace,1,1,0,0,0,0
+Semotilus atromaculatus,creek chub,1,1,0,0,0,0
+Umbra limi,central mudminnow,1,1,0,0,0,0
+Pomoxis nigromaculatus,black crappie,1,0,1,1,0,0
+Lepisosteus osseus,longnose gar,1,0,1,0,0,1
+Pimephales promelas,fathead minnow,1,0,1,0,0,1
+Cyprinella analostana,satinfin shiner,1,0,0,1,0,1
+Pimephales notatus,bluntnose minnow,1,0,0,1,0,1
+Hybognathus hankinsoni,brassy minnow,1,0,0,0,0,1
+Alosa aestivalis,blueback herring,1,0,0,0,0,0
+Anguilla rostrata,American eel,1,0,0,0,0,0
+Campostoma anomalum,central stoneroller,1,0,0,0,0,0
+Carassius auratus,goldfish,1,0,0,0,0,0
+Catostomus catostomus,longnose sucker,1,0,0,0,0,0
+Clinostomus elongatus,redside dace,1,0,0,0,0,0
+Coregonus artedi,cisco,1,0,0,0,0,0
+Cottus bairdi,mottled sculpin,1,0,0,0,0,0
+Cottus cognatus,slimy sculpin,1,0,0,0,0,0
+Cyprinella spiloptera,spotfin shiner,1,0,0,0,0,0
+Esox lucius x Esox masquinongy,tiger musky,1,0,0,0,0,0
+Exoglossum maxillingua,cutlips minnow,1,0,0,0,0,0
+Hybognathus regius,eastern silvery minnow,1,0,0,0,0,0
+Luxilus cornutus,common shiner,1,0,0,0,0,0
+Margariscus margarita,pearl dace,1,0,0,0,0,0
+Morone chrysops,white bass,1,0,0,0,0,0
+Moxostoma macrolepidotum,shorthead redhorse,1,0,0,0,0,0
+Nocomis biguttatus,hornyhead chub,1,0,0,0,0,0
+Notropis rubellus,rosyface shiner,1,0,0,0,0,0
+Notropis stramineus,sand shiner,1,0,0,0,0,0
+Noturus flavus,stonecat,1,0,0,0,0,0
+Noturus insignis,margined madtom,1,0,0,0,0,0
+Oncorhynchus mykiss,rainbow trout,1,0,0,0,0,0
+Percina maculata,blackside darter,1,0,0,0,0,0
+Petromyzon marinus,sea lamprey,1,0,0,0,0,0
+Salmo salar,Atlantic salmon,1,0,0,0,0,0
+Salmo trutta,brown trout,1,0,0,0,0,0
+Salvelinus fontinalis,brook trout,1,0,0,0,0,0
+Scardinius erythrophthalmus,rudd,1,0,0,0,0,0
+Semotilus corpralis,fallfish,1,0,0,0,0,0
+Etheostoma exile,Iowa darter,0,0,0,0,0,0
+Lepomis peltastes,northern sunfish,0,0,0,0,0,0
+Notropis bifrenatus,bridle shiner,0,0,0,0,0,0
+Notropis dorsalis,bigmouth shiner,0,0,0,0,0,0
+Notropis heterodon,blackchin shiner,0,0,0,0,0,0
+Noturus gyrinus,tadpole madtom,0,0,0,0,0,0
+Noturus miurus,brindled madtom,0,0,0,0,0,0
+Pomoxis annularis,white crappie,0,0,0,0,0,0
