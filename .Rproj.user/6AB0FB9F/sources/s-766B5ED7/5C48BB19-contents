@@ -1,0 +1,207 @@
+### eDNA/tissue-based allele freqency comparison in field samples
+### Last updated 11.15.2020 by Kara Andres
+
+# This script accomplishes the following: 
+# Calculate tissue allele frequencies
+# Calculate eDNA allele frequencies
+# Exclude loci with poor coverage or not in HWE
+# Correlation between population allele/read frequencies
+# PCA plot of tissue samples and eDNA samples
+
+library(adegenet)
+library(pegas)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(splitstackshape)
+library(RColorBrewer)
+library(stringr)
+library(viridis)
+
+# Import read count and genotype matrices for both field experiment and mesocosm experiment
+# read in MultAmp output: col = samples, row = loci, cells = allele1/allele2:reads1,reads2
+hap_genotype_field <- read.csv("/Users/kbja10/Documents/Cornell/Research/Round goby/Populations genetics: eDNA/Field_experiment_2019/data_analysis/ref_out_9nov2020/hap_genotype.csv", header=TRUE)
+hap_genotype_field <- data.frame(lapply(hap_genotype_field[,-2], gsub, pattern=".*:", replacement=""))   # Remove 'Haplotypes' column, remove everything before ":" in each cell
+hap_genotype_field_tissues <- hap_genotype_field[,grep("t_", colnames(hap_genotype_field))] # select only tissue samples
+hap_genotype_mat <- t(as.matrix(hap_genotype_field_tissues[,]))   # Transpose, turn into matrix
+
+# Recode genotypes for missing data (< 10 reads/locus)
+# Create a new matrix w/ the total number of reads per locus per sample
+counts_total <- matrix(NA, nrow = nrow(hap_genotype_mat), ncol = ncol(hap_genotype_mat)) # nrow = samples, ncol = loci
+for (i in 1:(nrow(hap_genotype_mat)*ncol(hap_genotype_mat))){
+  counts_total[i] <- sum(as.numeric(strsplit(hap_genotype_mat[i], ",")[[1]]))
+}
+# Create a new matrix that treats total # reads/locus <=10 as missing data
+counts_less10 <- matrix(NA, nrow = nrow(hap_genotype_mat), ncol = ncol(hap_genotype_mat))
+for (i in 1:(nrow(hap_genotype_mat)*ncol(hap_genotype_mat))){
+  if (counts_total[i]<=10) {
+    counts_less10[i]=NA} else {
+      counts_less10[i]=counts_total[i]
+    }
+}
+
+# Read in genotypes
+genotypes_field <- read.csv("/Users/kbja10/Documents/Cornell/Research/Round goby/Populations genetics: eDNA/Field_experiment_2019/data_analysis/ref_out_9nov2020/hap_genotype_matrix.csv", header=TRUE)
+genotypes_field <- genotypes_field[grep("t_", genotypes_field$X),] # select tissue samples
+genotypes <- as.matrix(genotypes_field[,-1]) # remove row and col names
+
+# Loop through to re-code alleles appropriately
+#If total count <10, locus gets "0|0"
+genotypes_edited <-  matrix(NA, nrow = nrow(hap_genotype_mat), ncol = ncol(hap_genotype_mat))
+for (i in 1:(nrow(hap_genotype_mat)*ncol(hap_genotype_mat))){
+  if (is.na(counts_less10[i]==TRUE)) {
+    genotypes_edited[i] <- paste0(0, "|", 0)} else {
+      genotypes_edited[i] = genotypes[i]
+    }
+}
+
+genotypes_edited_df <- as.data.frame(genotypes_edited) # Turn genotypes_edited into df, name columns (loci), and split by "|"
+colnames(genotypes_edited_df) <- hap_genotype_field$Locus # name columns (loci)
+genotypes_edited_df_split <- as.data.frame(cSplit(genotypes_edited_df, 1:ncol(genotypes_edited_df), '|'))  # split each locus by "|"
+genotypes_edited_df_split$individual <- rownames(hap_genotype_mat)
+
+# Calculate number of individuals and alleles with missing data
+apply(genotypes_edited_df_split, 1, function(x) {sum(x==0)}) # number of alleles with missing data per individual (row)
+apply(genotypes_edited_df_split, 2, function(x) {sum(x==0)}) # number of alleles with missing data per locus (column)
+
+allelic_richness <- data.frame(allele = NA, allelic_rich = NA)
+for (i in seq(1,ncol(genotypes_edited_df_split)-1,2)){
+  uniq_alleles <- c(genotypes_edited_df_split[,i], genotypes_edited_df_split[,i+1])
+  allele <- colnames(genotypes_edited_df_split)[i]
+  allelic_rich <- length(unique(uniq_alleles[uniq_alleles>0]))
+  allelic_richness_temp <- cbind(allele, allelic_rich)
+  allelic_richness <- rbind(allelic_richness, allelic_richness_temp) 
+}
+allelic_richness <- allelic_richness[-1,]
+allelic_richness$allelic_rich <- as.numeric(allelic_richness$allelic_rich)
+mean(allelic_richness$allelic_rich, na.rm = TRUE) # mean alleic rich = 9.4
+
+# Tissue population allele frequencies
+# Subset genotypes for individuals by site
+locus_positions <- seq(1, ncol(genotypes_edited_df_split)-1, 2)  # starting column number for each locus
+lnames <- colnames(genotypes_edited_df_split)
+site_codes <- c("LHS","LMM","LMK","ONO","ROC","ONE","OSW","CAY","ERIW","ECAN","ERIE","LSC","CRO")
+total_tissue_allele_freqs <- NULL
+for (i in site_codes){ # for each site (13)
+  subset <- genotypes_edited_df_split[grep(i, genotypes_edited_df_split$individual),]
+  for (j in locus_positions) { # for each locus (35)
+    alleles <- c(subset[,j], subset[,j+1]) # combine 2 alleles per locus
+    alleles2 <- as.data.frame(table(alleles)) # count each allele at locus x
+    alleles3 <- alleles2[alleles2$Freq!=0 & alleles2$alleles!=0,] # remove missing data (otherwise 0 would be counted in total number of alleles)
+    alleles4 <- cbind(alleles3,alleles3[,2]/sum(alleles3[,2])) # calculate frequencies
+    population <- rep(paste(i), nrow(alleles4)) # mesocosm name 
+    if (length(population) > 0) {
+      output <- cbind(lnames[j],alleles4, population) #combine locus name, frequencies
+      total_tissue_allele_freqs <<- rbind(total_tissue_allele_freqs,output) # add the new rows to the bottom of the data frame        
+    }
+  }
+}
+
+colnames(total_tissue_allele_freqs) <- c("locus","allele","count","tissue_freq", "population")
+total_tissue_allele_freqs$locus <- gsub(total_tissue_allele_freqs$locus, pattern = "_1", replacement = "") # remove subscript from locus names 
+
+
+#############################################################################################
+########################## Calculate eDNA read frequencies ##########################
+#############################################################################################
+
+# Total normalized read frequencies for all counts > 10 and frequencies > 0.01
+# Import read counts for all alleles at all loci
+dataFiles <- lapply(Sys.glob("/Users/kbja10/Documents/Cornell/Research/Round goby/Populations genetics: eDNA/Field_experiment_2019/data_analysis/ref_out_9nov2020/haplotype2sample_raw/Nmel*.haplotype2sample.txt"), read.delim)
+filenames <- Sys.glob("/Users/kbja10/Documents/Cornell/Research/Round goby/Populations genetics: eDNA/Field_experiment_2019/data_analysis/ref_out_9nov2020/haplotype2sample_raw/Nmel*.haplotype2sample.txt") # make list of file names
+filenames <- gsub(".haplotype2sample\\.txt", "", filenames) # take out extra characters in file names
+filenames <- gsub("/Users/kbja10/Documents/Cornell/Research/Round goby/Populations genetics: eDNA/Field_experiment_2019/data_analysis/ref_out_9nov2020/haplotype2sample_raw/", "", filenames)
+names(dataFiles) <- filenames # rename files for each locus
+site_codes <- c("LHS","LMM","LMK","ONO","ROC","ONE","OSW","CAY","ERIW","ECAN","ERIE","LSC","CRO")
+
+# Begin loop
+# create empty dataframe to populate with allele frequencies for each mesocosm
+total_edna_allele_freqs <- data.frame(NULL)
+j = 1 # individual locus indexed from "filenames"
+# Create matrix with total number of reads/haplotype <=1 as missing data
+for (file in dataFiles) { # for the reads at each locus for all samples 
+  file_mat <- as.matrix(file[,-1]) # remove "haplotype" column, turn into matrix
+  file_mat <- file_mat[,grep("e_", colnames(file_mat))] # subset to eDNA samples
+  file_mat <- file_mat[,-grep("_BL", colnames(file_mat))] # remove blank sample
+  file_mat[file_mat <= 1] <- 0 # replace counts <1 with 0
+  file_mat_norm <- as.data.frame(apply(file_mat, 2, function(x) x/sum(x, na.rm = TRUE))) # read count normalized per sample
+  file_mat_norm[file_mat_norm<0.01] <- 0 # remove alleles below threshold of 0.01 per sample
+  file_mat_norm <- as.data.frame(apply(file_mat_norm, 2, function(x) x/sum(x, na.rm = TRUE))) # overwrite with alleles < threshold removed
+  for (i in site_codes){ # for each site (15)
+    subset <- file_mat_norm[,grep(i, colnames(file_mat_norm))]
+    edna_allele_freqs_temp <- data.frame(locus=rep(filenames[[j]]), allele=file[,1], count=rowSums(subset, na.rm = TRUE)) # read count normalized per sample
+    edna_allele_freqs_temp$edna_freq <- edna_allele_freqs_temp$count/sum(edna_allele_freqs_temp$count, na.rm = TRUE)
+    edna_allele_freqs_temp$population <- rep(paste(i), nrow(edna_allele_freqs_temp))
+    edna_allele_freqs_temp[is.na(edna_allele_freqs_temp)] <- 0
+    total_edna_allele_freqs <- rbind(total_edna_allele_freqs, edna_allele_freqs_temp)
+  }
+  j <- j+1
+}  
+
+# Check blanks
+# come back to this 
+
+# Combine eDNA and tisuse allele freqs
+total_allele_freqs <- merge(total_edna_allele_freqs, total_tissue_allele_freqs, by = c("locus","allele","population"), all=TRUE)
+total_allele_freqs[is.na(total_allele_freqs)] <- 0
+total_allele_freqs <-  total_allele_freqs[total_allele_freqs$edna_freq>0|total_allele_freqs$tissue_freq>0,]
+nrow(total_allele_freqs)
+
+# Remove problem loci
+patterns <- c("Nmel185","Nmel155","Nmel248","Nmel361","Nmel726", "Nmel1103","Nmel1531") # loci to remove
+total_tissue_allele_freqs_HWE <- filter(total_tissue_allele_freqs, !grepl(paste(patterns, collapse="|"), locus))
+total_edna_allele_freqs_HWE <- filter(total_edna_allele_freqs, !grepl(paste(patterns, collapse="|"), locus))
+total_allele_freqs_HWE <- filter(total_allele_freqs, !grepl(paste(patterns, collapse="|"), locus))
+
+#############################################################################################
+############## Correlation between population allele/read frequencies ###############
+#############################################################################################
+ggplot(total_allele_freqs_HWE, aes(x=tissue_freq, y=edna_freq, color=locus)) +
+  geom_point() + ylab("Field eDNA allele frequency") + xlab("Genotyped tissue allele frequency") + 
+  scale_x_continuous(breaks = seq(0.00, 1.00, 0.25)) + scale_y_continuous(breaks = seq(0.00, 1.00, 0.25)) +
+  scale_color_manual(values=viridis(29)) + theme_bw() +
+  facet_wrap(vars(population))
+
+
+#############################################################################################
+############################# Subset to just 4 sites #######################################
+#############################################################################################
+# correlation
+sites <- c("CAY","LMM","LSC","ONE")
+subset_total_allele_freqs_HWE <- filter(total_allele_freqs_HWE, grepl(paste(sites,collapse="|"),population))
+cors <- ddply(subset_total_allele_freqs_HWE, "population", summarise, cor = round(cor(tissue_freq, edna_freq, use="complete.obs"), 2))
+p <- ggplot(subset_total_allele_freqs_HWE, aes(x=tissue_freq, y=edna_freq, color=locus)) +
+  geom_point() + ylab("Field eDNA allele frequency") + xlab("Genotyped tissue allele frequency") + 
+  scale_x_continuous(breaks = seq(0.00, 1.00, 0.25)) + scale_y_continuous(breaks = seq(0.00, 1.00, 0.25)) +
+  scale_color_manual(values=viridis(29)) + theme_bw() 
+p <- p + facet_wrap(vars(population)) +
+  geom_text(data=cors, aes(label=paste("r=", cor, sep="")), x=0.15, y=0.9, inherit.aes = FALSE)
+# ggsave(filename = paste("/Users/kbja10/Downloads/field_samples_correlation.eps"), plot=p, dpi = 300,  width = 8, height = 6, units = "in")   
+
+# PCA
+data_long <- data.frame(locus_allele=paste(subset_total_allele_freqs_HWE$locus,"_", subset_total_allele_freqs_HWE$allele,sep = ""),
+                        population=subset_total_allele_freqs_HWE$population,
+                        edna_freq=subset_total_allele_freqs_HWE$edna_freq,
+                        tissue_freq=subset_total_allele_freqs_HWE$tissue_freq)
+data_wide <- data_long %>% 
+  pivot_wider(names_from = c(population), values_from = c(edna_freq,tissue_freq))
+PCA_data <- as.data.frame(t(subset(data_wide, select = -locus_allele)))
+PCA_data[is.na(PCA_data)] <- 0
+colnames(PCA_data) <- data_wide$locus_allele # name the columns: each allele is a column 
+my.pca <- prcomp(PCA_data)
+pca_summary <- summary(my.pca)
+PC1_and_PC2 <- data.frame(PC1=my.pca$x[,1], PC2= my.pca$x[,2], type = rownames(my.pca$x), 
+                          site = rep(sites, 2), sample = rep(c("eDNA","tissue"), each=4))
+my_palette <- viridis(4)
+my_plot <- ggplot(PC1_and_PC2, aes(x=PC1, y=PC2, col=factor(site), shape = factor(sample))) +
+  scale_color_manual(name = "site", values = my_palette) +
+  scale_shape_manual(name = "sample", values=c(24,21)) +
+  theme_bw() +
+  labs(x = paste("PC1 (",round(pca_summary$importance[,1][2]*100,1),"%)", sep = ""), 
+       y = paste("PC2 (",round(pca_summary$importance[,2][2]*100,1),"%)", sep = "")) +
+  theme(axis.text=element_text(size=15),
+        axis.title=element_text(size=20)) +
+  geom_point(size = 5, stroke = 2)
+my_plot
+# ggsave(filename = paste("/Users/kbja10/Downloads/field_samples_PCA.eps"), plot=my_plot, dpi = 300,  width = 7, height = 5, units = "in")   

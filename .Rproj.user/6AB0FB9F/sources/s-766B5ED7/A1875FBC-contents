@@ -1,0 +1,11 @@
+library(vegan)
+
+dat <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/EF_datasets/Oneida_2017_comm_dataset_sites.csv")
+dat <- dat[,-1]
+sp1 <- specaccum(dat)
+plot(sp1, ci.type="poly", col="blue", lwd=2, ci.lty=0, ci.col="lightblue")
+sp2 <- specaccum(dat, "random")
+summary(sp2)
+plot(sp1, ci.type="poly", col="blue", lwd=2, ci.lty=0, ci.col="lightblue")
+boxplot(sp2, col="yellow", add=TRUE, pch="+")
+
