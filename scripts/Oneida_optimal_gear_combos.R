@@ -299,16 +299,16 @@ plot(front_all$front, xlim = c(0, effort_max), ylim = c(0, max(y)),
      pch = 1, col = my.cols[1], type = "b", lwd = 1,
      xlab = "Effort (work hours)", ylab = "Expected number of species detected",
      main = "Pareto frontiers for combined-method surveys")
-points(front_eDNA$front, pch = 16, col = my.cols[2], lwd = 2, type = "b")
-points(front_ef$front, pch = 16, col = my.cols[3], lwd = 2, type = "b")
-points(front_seine$front, pch = 16, col = my.cols[4], lwd = 2, type = "b")
-points(front_fyke$front, pch = 16, col = my.cols[5], lwd = 2, type = "b")
-points(front_gillnet$front, pch = 16, col = my.cols[6], lwd = 2, type = "b")
+points(front_eDNA$front, pch = 16, col = my.cols[2], lwd = 3, type = "o")
+points(front_ef$front, pch = 16, col = my.cols[3], lwd = 3, type = "o")
+points(front_seine$front, pch = 16, col = my.cols[4], lwd = 3, type = "o")
+points(front_fyke$front, pch = 16, col = my.cols[5], lwd = 3, type = "o")
+points(front_gillnet$front, pch = 16, col = my.cols[6], lwd = 3, type = "o")
 points(front_trad$front, pch = 1, col = my.cols[7], lwd = 1, type = "b")
 
 legend("topleft", legend = c("eDNA", "Electrofishing", "Seine", "Fyke", "Gillnet", "Combined traditional", "Combined eDNA and traditional"),
        pch = c(rep(16,5),1,1),
-       col = my.cols[c(2:7,1)], cex = 0.7)
+       col = my.cols[c(2:7,1)], cex=0.8)
 
 
 
@@ -327,16 +327,16 @@ plot(hull_all$hull, xlim = c(0, effort_max), ylim = c(0, max(y)),
      pch = 1, col = my.cols[1], type = "b", lwd = 1,
      xlab = "Effort (work hours)", 
      ylab = "Expected number of species detected")
-points(front_eDNA$front, pch = 16, col = my.cols[2], lwd = 2, type = "b")
-points(front_ef$front, pch = 16, col = my.cols[3], lwd = 2, type = "b")
-points(front_seine$front, pch = 16, col = my.cols[4], lwd = 2, type = "b")
-points(front_fyke$front, pch = 16, col = my.cols[5], lwd = 2, type = "b")
-points(front_gillnet$front, pch = 16, col = my.cols[6], lwd = 2, type = "b")
+points(front_eDNA$front, pch = 16, col = my.cols[2], lwd = 3, type = "o")
+points(front_ef$front, pch = 16, col = my.cols[3], lwd = 3, type = "o")
+points(front_seine$front, pch = 16, col = my.cols[4], lwd = 3, type = "o")
+points(front_fyke$front, pch = 16, col = my.cols[5], lwd = 3, type = "o")
+points(front_gillnet$front, pch = 16, col = my.cols[6], lwd = 3, type = "o")
 points(hull_trad$hull, pch = 1, col = my.cols[7], lwd = 1, type = "b")
 
-legend("topleft", legend = c("eDNA", "Electrofishing", "Seine", "Fyke", "Gillnet", "Combined traditional", "Combined eDNA and traditional"),
+legend("topleft", legend = c("eDNA", "Electrofishing", "Seine", "Fyke net", "Gill net", "Combined traditional gears", "Combined eDNA and traditional gears"),
        pch = c(rep(16,5),1,1),
-       col = my.cols[c(2:7,1)], cex = 0.7)
+       col = my.cols[c(2:7,1)], cex = 0.8)
 
 dev.off()
 
@@ -375,8 +375,8 @@ stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet
   # Subset to gear combinations on the Pareto front
   effort_df <- effort_df[pareto_front[["indices"]],]
   names(effort_df)[names(effort_df) == "ef"] <- "Electrofishing" # rename "ef" as "electrofishing" (for legend)
-  names(effort_df)[names(effort_df) == "fyke"] <- "Fyke" # rename "ef" as "electrofishing" (for legend)
-  names(effort_df)[names(effort_df) == "gillnet"] <- "Gillnet" # rename "ef" as "electrofishing" (for legend)
+  names(effort_df)[names(effort_df) == "fyke"] <- "Fyke net" # rename "ef" as "electrofishing" (for legend)
+  names(effort_df)[names(effort_df) == "gillnet"] <- "Gill net" # rename "ef" as "electrofishing" (for legend)
   names(effort_df)[names(effort_df) == "seine"] <- "Seine" # rename "ef" as "electrofishing" (for legend)
   
   # Convert into long format (three columns: total effort, effort, and method)
@@ -396,7 +396,7 @@ stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet
 
 # Stacked area plots for Pareto fronts
 cols <- c(brewer.pal(8, "Dark2"),"#386CB0")
-my.cols <- cols[c(4,9,1,6,3,2)]
+my.cols <- cols[c(4,9,6,3,1)]
 stacked_area_plot(pareto_front = front_all, cols=my.cols)
 stacked_area_plot(pareto_front = front_trad, cols=my.cols)
 
