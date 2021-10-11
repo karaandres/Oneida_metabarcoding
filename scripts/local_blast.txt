@@ -1,0 +1,14 @@
+### BLAST ASVs against local database (Sanger sequenced round goby and greater redhorse tissues)
+
+# 1) Go to ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ and download latest BLAST executables (ncbi-blast-2.11.0+-x64-macosx.tar.gz)
+# 2) Put all Sanger sequences in single fasta file (sanger_seqs.fasta)
+# 3) copy sanger_seqs.fasta and uniqueSeqs.nochim.fasta (all ASVs we want to BLAST) to ncbi-blast-2.11.0+ bin folder
+# 4) run the following commands to turn sanger_seqs.fasta into a searchable nucleotide database and BLAST ASVs against this database
+
+cd ncbi-blast-2.11.0+/bin
+
+./makeblastdb -in sanger_seqs.fasta -out sangerdb -dbtype 'nucl' -hash_index
+
+./blastn -query uniqueSeqs.nochim.fasta -db sangerdb -outfmt '7 qseqid saccver pident evalue qstart qend length sscinames staxids' -evalue 1e-3 -max_target_seqs 5 -num_threads 2 -out local_blstn_nonchim_fmt7_Oneida.txt
+
+# TIP: if you receive an error: “makeblastdb” cannot be opened because the developer cannot be verified. -- open the file from finder (choose Open With --> Terminal) to override system security

@@ -1,0 +1,237 @@
+### Oneida eDNA analysis
+### Updated 4.1.2020 by Kara Andres (kja68@cornell.edu)
+
+# upload 3 datasets: OG, threshold applied, cleaned up
+pident_98_F <- read.csv("/Users/kbja10/Downloads/eDNA_counts_pident_98_restrict_FALSE_inc_blanks_modified.csv")
+pident_98_F_threshold <- read.csv("/Users/kbja10/Downloads/eDNA_counts_pident_98_restrict_FALSE_inc_blanks_threshold.csv")
+pident_98_F_clean <- read.csv("/Users/kbja10/Downloads/eDNA_counts_pident_98_restrict_FALSE_threshold_cleaned.csv")
+
+# add column of whether the species is a target or not
+pident_98_F$target <- c(2,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,1,1,1,3,1,1,1,1,2,1,1,1,2,1,1,2,2,1,1,1,1,
+                        1,1,3,2,1,1,3,1,1,1,3,2,3,3,1,1,2,1,3,2,2,2,2,2,1,3,2,1,1,1,1,2,1,1,2,1,1,1,
+                        1,1,3,1,2,3,3,1,1,1,3,1,1,4)
+pident_98_F$cumul_control <- pident_98_F$BL1+pident_98_F$BL2+pident_98_F$BL3+pident_98_F$X1BL+pident_98_F$X27G+pident_98_F$X12G
+pident_98_F <- pident_98_F[,-1] # remove row number column
+pident_98_F_threshold <- pident_98_F_threshold[,-1] # remove row number column
+pident_98_F_clean <- pident_98_F_clean[,-1] # remove row number column
+
+# the majority of species in the dataset do not show up in the controls
+library(ggplot2)
+# png("/Users/kbja10/Downloads/neg_control_hist.png", width=6, height=6, units="in", res=300)
+hist(pident_98_F$cumul_control, breaks = 75, xlab = "Number of reads", main = "")
+# dev.off()
+
+# calculating the mean number of non-zero reads in negative controls
+mean(pident_98_F$cumul_control) # mean reads across all controls
+mean(pident_98_F$cumul_control[1:(length(pident_98_F$cumul_control)-1)]) # mean reads assigned to species across all controls
+fish_spp <- pident_98_F[pident_98_F$target!=3&pident_98_F$target!=4,] # reads assigned to fish species
+mean(fish_spp$cumul_control[fish_spp$cumul_control>0], na.rm=T) # mean = 47 reads assigned to fish species 
+
+# Plot the negative controls w/ species target category 
+neg_controls <- pident_98_F[pident_98_F$cumul_control>0, which(names(pident_98_F) %in% c("X","BL1","BL2","BL3","X1BL","X27G","cumul_control","target"))]
+neg_controls_threshold <- pident_98_F_threshold[pident_98_F_threshold$cumul_control>0, which(names(pident_98_F_threshold) %in% c("species","BL1","BL2","BL3","X1BL","X27G","cumul_control"))]
+neg_controls$target <- as.factor(neg_controls$target)
+neg_controls_threshold$target <- as.factor(c(3,1,3,1,4)) # add target column
+
+# Applying the thresholds removes all of the S. American fishes 
+neg_control_plot <- ggplot(neg_controls, aes(fill=target, y=cumul_control, x=X)) + 
+  geom_bar(stat="identity") + scale_y_log10() + ylab("Sum of reads in all controls") + xlab("Species") +
+  scale_fill_manual(values=c("#009E73", "#E69F00", "#56B4E9", "#999999"),
+  labels=c("Oneida species", "S. American species", "Non-fish species", "Not Assigned")) +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 45)) + theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/neg_control_reads.png", plot = neg_control_plot)
+neg_control_thresh_plot <- ggplot(neg_controls_threshold, aes(fill=target, y=cumul_control, x=species)) + 
+  geom_bar(stat="identity") + scale_y_log10() + ylab("Sum of reads in all controls") + xlab("Species") +
+  scale_fill_manual(values=c("#009E73", "#56B4E9", "#999999"),
+  labels=c("Oneida species", "Non-fish species", "Not Assigned")) +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 45)) + theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/neg_control_threshold.png", plot = neg_control_thresh_plot)
+
+# calculating the proportion of reads from S. American fishes in all samples 
+options(scipen=999)
+read_total <- data.frame("Sample" = factor(names(pident_98_F)[2:(ncol(pident_98_F)-1)]), "Oneida_fish" = NA, "S_American_fish" = NA, "Non_fish" = NA, "Not_Assigned" = NA)
+read_props <- data.frame("Sample" = factor(names(pident_98_F)[2:(ncol(pident_98_F)-1)]), "Oneida_fish" = NA, "S_American_fish" = NA, "Non_fish" = NA, "Not_Assigned" = NA)
+x=1
+for (i in 2:(ncol(pident_98_F)-1)){
+  temp_oneida <- pident_98_F[pident_98_F$target==1,]
+  temp_nononeida <- pident_98_F[pident_98_F$target==2,]
+  temp_nonfish <- pident_98_F[pident_98_F$target==3,]
+  temp_NA <- pident_98_F[pident_98_F$target==4,]
+  read_total[x,2] <- sum(temp_oneida[,i], na.rm=T)
+  read_total[x,3] <- sum(temp_nononeida[,i], na.rm=T)
+  read_total[x,4] <- sum(temp_nonfish[,i], na.rm=T)
+  read_total[x,5] <- sum(temp_NA[,i], na.rm=T)
+  read_props[x,2] <- sum(temp_oneida[,i], na.rm=T)/sum(pident_98_F[,i])
+  read_props[x,3] <- sum(temp_nononeida[,i], na.rm=T)/sum(pident_98_F[,i])
+  read_props[x,4] <- sum(temp_nonfish[,i], na.rm=T)/sum(pident_98_F[,i])
+  read_props[x,5] <- sum(temp_NA[,i], na.rm=T)/sum(pident_98_F[,i])
+  x=x+1
+}
+
+# Remove negative controls and plot totals and proportions of reads from each category
+library(tidyr)
+read_total_long <- gather(read_total, target, total, Oneida_fish:Not_Assigned, factor_key=TRUE)
+read_total_long <- read_total_long[read_total_long$Sample!="BL1" & read_total_long$Sample!="BL2" & read_total_long$Sample!="BL3" & read_total_long$Sample!="X1BL" & read_total_long$Sample!="X27G" & read_total_long$Sample!="cumul_control",]
+read_props_long <- gather(read_props, target, proportion, Oneida_fish:Not_Assigned, factor_key=TRUE)
+read_props_long <- read_props_long[read_props_long$Sample!="BL1" & read_props_long$Sample!="BL2" & read_props_long$Sample!="BL3" & read_props_long$Sample!="X1BL" & read_props_long$Sample!="X27G" & read_props_long$Sample!="cumul_control",]
+
+total_reads_plot <- ggplot(read_total_long, aes(fill=target, y=total, x=Sample)) + 
+  geom_bar(position="stack", stat="identity") + ylab("Total number of reads") +
+  scale_fill_manual(values=c("#009E73", "#E69F00", "#56B4E9", "#999999"),labels=c("Oneida species", "S. American species", "Non-fish species", "Not Assigned")) +
+  theme_minimal() + theme(axis.text=element_text(size=12), axis.text.x=element_text(angle = 45), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/total_reads.png", plot = total_reads_plot)
+
+prop_reads_plot <- ggplot(read_props_long, aes(fill=target, y=proportion, x=Sample)) + 
+  geom_bar(position="fill", stat="identity") + ylab("Proportion of reads") +
+  scale_fill_manual(values=c("#009E73", "#E69F00", "#56B4E9", "#999999"),labels=c("Oneida species", "S. American species", "Non-fish species", "Not Assigned")) +
+  theme_minimal() + theme(axis.text=element_text(size=12), axis.text.x=element_text(angle = 45), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/prop_reads.png", plot = prop_reads_plot)
+
+# Look into what samples have the most S. American fish reads 
+S_Am_total_reads <- ggplot(read_total_long[read_total_long$target=="S_American_fish",]) +
+  aes(y=total, x=Sample)+geom_bar(stat="identity") + ylab("Total number of reads") +
+  theme(axis.text=element_text(size=12), axis.text.x=element_text(angle = 45), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/S_Am_total_reads.png", plot = S_Am_total_reads)
+S_Am_prop_reads <- ggplot(read_props_long[read_props_long$target=="S_American_fish",]) +
+  aes(y=proportion, x=Sample)+geom_bar(stat="identity") + ylab("Proportion of reads") +
+  theme(axis.text.x = element_text(angle = 45))
+# ggsave("/Users/kbja10/Downloads/S_Am_prop_reads.png", plot = S_Am_prop_reads)
+
+# calculating the proportion of reads from S. American fishes after cleaning of data
+pident_98_F_threshold$target <- c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,4)
+read_total_thresh <- data.frame("Sample" = factor(names(pident_98_F_threshold)[2:(ncol(pident_98_F_threshold)-1)]), "Oneida_fish" = NA, "S_American_fish" = NA, "Non_fish" = NA, "Not_Assigned" = NA)
+read_props_thresh <- data.frame("Sample" = factor(names(pident_98_F)[2:(ncol(pident_98_F)-1)]), "Oneida_fish" = NA, "S_American_fish" = NA, "Non_fish" = NA, "Not_Assigned" = NA)
+x=1
+for (i in 2:(ncol(pident_98_F_threshold)-1)){
+  temp_oneida <- pident_98_F_threshold[pident_98_F_threshold$target==1,]
+  temp_nononeida <- pident_98_F_threshold[pident_98_F_threshold$target==2,]
+  temp_nonfish <- pident_98_F_threshold[pident_98_F_threshold$target==3,]
+  temp_NA <- pident_98_F_threshold[pident_98_F_threshold$target==4,]
+  read_total_thresh[x,2] <- sum(temp_oneida[,i], na.rm=T)
+  read_total_thresh[x,3] <- sum(temp_nononeida[,i], na.rm=T)
+  read_total_thresh[x,4] <- sum(temp_nonfish[,i], na.rm=T)
+  read_total_thresh[x,5] <- sum(temp_NA[,i], na.rm=T)
+  read_props_thresh[x,2] <- sum(temp_oneida[,i], na.rm=T)/sum(pident_98_F[,i])
+  read_props_thresh[x,3] <- sum(temp_nononeida[,i], na.rm=T)/sum(pident_98_F[,i])
+  read_props_thresh[x,4] <- sum(temp_nonfish[,i], na.rm=T)/sum(pident_98_F[,i])
+  read_props_thresh[x,5] <- sum(temp_NA[,i], na.rm=T)/sum(pident_98_F[,i])
+  x=x+1
+}
+
+# Remove negative controls and plot totals and proportions of reads from each category
+read_total_thresh_long <- gather(read_total_thresh, target, total, Oneida_fish:Not_Assigned, factor_key=TRUE)
+read_total_thresh_long <- read_total_thresh_long[read_total_thresh_long$Sample!="BL1" & read_total_thresh_long$Sample!="BL2" & read_total_thresh_long$Sample!="BL3" & read_total_thresh_long$Sample!="X1BL" & read_total_thresh_long$Sample!="X27G" & read_total_thresh_long$Sample!="cumul_control",]
+read_props_thresh_long <- gather(read_props_thresh, target, proportion, Oneida_fish:Not_Assigned, factor_key=TRUE)
+read_props_thresh_long <- read_props_thresh_long[read_props_thresh_long$Sample!="BL1" & read_props_thresh_long$Sample!="BL2" & read_props_thresh_long$Sample!="BL3" & read_props_thresh_long$Sample!="X1BL" & read_props_thresh_long$Sample!="X27G" & read_props_thresh_long$Sample!="cumul_control",]
+
+total_reads_thresh_plot <- ggplot(read_total_thresh_long, aes(fill=target, y=total, x=Sample)) + 
+  geom_bar(position="stack", stat="identity") + ylab("Total number of reads") + 
+  scale_fill_manual(values=c("#009E73", "#E69F00", "#56B4E9", "#999999"),labels=c("Oneida species", "S. American species", "Non-fish species", "Not Assigned")) +
+  theme_minimal() + theme(axis.text=element_text(size=12), axis.text.x=element_text(angle = 45), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/total_reads_thresh.png", plot = total_reads_thresh_plot)
+
+prop_reads_thresh_plot <- ggplot(read_props_thresh_long, aes(fill=target, y=proportion, x=Sample)) + 
+  geom_bar(position="fill", stat="identity") + ylab("Proportion of reads") +
+  scale_fill_manual(values=c("#009E73", "#E69F00", "#56B4E9", "#999999"),labels=c("Oneida species", "S. American species", "Non-fish species", "Not Assigned")) +
+  theme_minimal() + theme(axis.text=element_text(size=12), axis.text.x=element_text(angle = 45), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/prop_reads_thresh.png", plot = prop_reads_thresh_plot)
+
+
+############# Part 2: Species presence-absence ##########################
+# Venn diagram of species in EF survey, historical Oneida, and eDNA sampling
+# Load library
+library(VennDiagram)
+library(RColorBrewer)
+# Generate 3 sets of 200 words
+species_dataset <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/all_species_list.csv", header = TRUE)
+EF_survey <- as.character(species_dataset$EF[1:35])
+Hist_oneida <- as.character(species_dataset$historical)
+eDNA_samples <- as.character(species_dataset$eDNA[1:50])
+myCol <- brewer.pal(3, "Pastel2")
+# Chart
+venn.diagram(x = list(EF_survey, Hist_oneida, eDNA_samples),
+  category.names = c("" , "" , ""),
+  filename = '/Users/kbja10/Downloads/venn_diagramm_4.15.png', output=TRUE,
+  imagetype="png" , height = 600, width = 600, resolution = 800,
+  lwd = 2, lty = 'blank', fill = myCol, cex = .2, fontface = "bold", fontfamily = "sans")
+  
+############# Part 3: Species accumulation curves ##########################
+library(vegan)
+# transpose dataframe -- do it this way so all numbers are not converted to strings
+n <- pident_98_F_clean$species
+pident_98_F_clean_t <- as.data.frame(t(pident_98_F_clean[,-1]))
+colnames(pident_98_F_clean_t) <- n
+# pident_98_F_clean_t$sample <- factor(row.names(pident_98_F_clean_t))
+# write.csv(pident_98_F_clean_t, file = "/Users/kbja10/Downloads/pident_98_F_clean_t.csv")
+
+# Plot curves
+# png("/Users/kbja10/Downloads/spp_accum_curve.png", width=8, height=6, units="in", res=600)
+sp_acc_pident_98_F_clean <- specaccum(pident_98_F_clean_t)
+plot(sp_acc_pident_98_F_clean, ci.type="poly", col="#56B4E9", lty=3, lwd=3, ci.lty=0, ci.col=alpha("gray", 0.2), 
+     ylab="Number of species",xlab="Number of sites", cex.axis=1.5, cex.lab=1.5, ylim = c(0,60))
+dat <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/EF_datasets/Oneida_2017_comm_dataset.csv")
+dat <- dat[,-1]
+sp1 <- specaccum(dat)
+plot(sp1, ci.type="poly", col="#009E73", lwd=3, ci.lty=0, ci.col=alpha("gray", 0.5), add=T)
+legend(1, 60, legend=c("eDNA samples", "Electrofishing survey"), col=c("#56B4E9","#009E73"), lty=c(3,1), lwd=3, cex=1.2)
+# dev.off()
+
+
+################# Part 4: Site occupancy -- eDNA vs. EF comparison ################################
+# Site occupancy (proportion of sites species is detected)
+oneida_sites <- read.csv("/Users/kbja10/Documents/Cornell/Research/Oneida/EF_datasets/Oneida_2017_comm_dataset_sites.csv")
+oneida_sites <- oneida_sites[,-1]
+edna_sites <- read.csv("/Users/kbja10/Downloads/edna_site_totals.csv")
+edna_sites <- edna_sites[,-1]
+occupancy_edna <- data.frame(species=colnames(edna_sites), occupancy=NA, sampling=NA)
+x <- 1
+for (i in 1:ncol(edna_sites)){
+  occupancy_edna[x,2] <- nrow(edna_sites[edna_sites[[i]]>0,])/8
+  occupancy_edna[x,3] <- "eDNA"
+  x <- x+1
+}
+occupancy_ef <- data.frame(species=colnames(oneida_sites), occupancy=NA, sampling=NA)
+x <- 1
+for (i in 1:ncol(oneida_sites)){
+  occupancy_ef[x,2] <- nrow(oneida_sites[oneida_sites[[i]]>0,])/8
+  occupancy_ef[x,3] <- "EF"
+  x <- x+1
+}
+site_occupancy <- rbind(occupancy_edna, occupancy_ef)
+site_occupancy_plot <- ggplot(site_occupancy, aes(fill=sampling, y=occupancy, x=reorder(species, -occupancy))) + 
+  geom_bar(position = position_dodge(0.7), width = 0.7, stat="identity") + ylab("Site Occupancy") + xlab("") +
+  scale_fill_manual(values=c("#56B4E9","#009E73"),labels=c("eDNA", "Electrofishing")) +
+  theme_minimal() + theme(axis.text=element_text(size=12), axis.text.x=element_text(angle = 90), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/site_occupancy_plot.png", plot = site_occupancy_plot, width = 10, height = 5)
+
+
+##################### Part 5: Site occupancy -- habitat comparison ################################
+# Site occupancy (proportion of sites species is detected)
+edna_occupancy <- read.csv("/Users/kbja10/Downloads/pident_98_F_clean_t.csv")
+edna_occupancy <- edna_occupancy[-c(1:4,16),] # exclude Y samples and 12G (field blank)
+edna_occupancy$habitat <- as.factor(c("Midlake","Nearshore","Nearshore","Tributary","Nearshore",
+                                      "Tributary","Nearshore","Nearshore","Nearshore","Nearshore",
+                                      "Nearshore","Midlake","Nearshore","Nearshore","Midlake",
+                                      "Nearshore","Nearshore","Tributary","Nearshore","Nearshore",
+                                      "Tributary","Nearshore","Nearshore","Nearshore","Nearshore"))
+
+occupancy_edna <- data.frame(species=NA, occupancy=NA, sampling=NA, habitat=NA)
+for (hab in unique(edna_occupancy$habitat)){
+    temp <- edna_occupancy[edna_occupancy$habitat==hab,]
+    temp_occup <- data.frame(species=colnames(temp[2:51]), occupancy=NA, sampling="eDNA", habitat=hab)
+    x <- 1
+    for (i in 2:(ncol(edna_occupancy)-1)){
+      temp_occup$occupancy[x] <- nrow(temp[temp[[i]]>0,])/nrow(temp)
+      x <- x+1
+  }
+    occupancy_edna <- rbind(occupancy_edna, temp_occup)
+}
+occupancy_edna <- occupancy_edna[-1,] # remove NA column
+occupancy_edna <- occupancy_edna[occupancy_edna$species!="Not.Assigned",]
+
+habitat_occupancy_plot <-
+ggplot(occupancy_edna, aes(fill=habitat, y=occupancy, x=reorder(species, -occupancy))) + 
+  geom_bar(position = position_dodge(0.7), width = 0.7, stat="identity") + ylab("Site occupancy") + xlab("") +
+  scale_fill_manual(values=c("#56B4E9","#009E73","pink"),labels=c("Midlake", "Nearshore", "Tributary")) +
+  theme_minimal() + theme(axis.text=element_text(size=12), axis.text.x=element_text(angle = 90, vjust=0.5, hjust=1), axis.title=element_text(size=14,face="bold"), legend.title = element_blank(), legend.text=element_text(size=12))
+# ggsave("/Users/kbja10/Downloads/habitat_occupancy_plot.png", plot = habitat_occupancy_plot, width = 10, height = 5)

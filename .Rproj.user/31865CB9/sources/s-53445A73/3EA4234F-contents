@@ -1,0 +1,51 @@
+library(pegas)
+library(seqinr)
+library(RColorBrewer)
+library(Biostrings)
+
+# x <- read.dna("/Users/kbja10/Documents/Cornell/Research/Lake_Tanganyika/test_fasta_LT.fa", format="fasta")
+# region <- read.csv("/Users/kbja10/Documents/Cornell/Research/Lake_Tanganyika/test_region_LT.csv", header=F)
+
+species_annnotation <- read.csv("/Users/kbja10/Downloads/Annotations_taxon assignment.csv")
+ASV_ND2_profiling_table <- read.csv("/Users/kbja10/Documents/Cornell/Research/Lake_Tanganyika/ASV_ND2 profiling_table.csv")
+fastaFile <- readDNAStringSet("/Users/kbja10/Documents/Cornell/Research/Lake_Tanganyika/LT_ND2_ASVs.fa")
+ND2_seqs <- data.frame(seq_name = names(fastaFile), sequence = paste(fastaFile))
+
+hap_network <- function(ASV_table, annotation, species){ # start function
+  ASV_subset <- annotation[annotation$Blast_top_match==species,] # subset annotation table to ASVs matching to species of interest
+  ASV_table_subset <- ASV_table[ASV_table$OTUID %in% ASV_subset$OTUID,] # subset ASV table to ASVs of interest
+  ASV_table_subset_prop <- as.data.frame(lapply(ASV_table_subset[,-1], function(x) round(x/sum(x)*100, digits=0))) # scale each sample to 100 reads
+  ASV_table_subset_prop[is.na(ASV_table_subset_prop)] <- 0 # replace NAs with 0
+  rownames(ASV_table_subset_prop) <- ASV_table_subset$OTUID # specify rownames as ASV IDs
+  fasta_dat <- data.frame(seq_name=NULL, sequence=NULL)
+  for (i in 1:ncol(ASV_table_subset_prop)){ # for each sample in ASV table
+    for (j in 1:nrow(ASV_table_subset_prop)){ # for each ASV
+      reads <- ASV_table_subset_prop[j,i] # proportion of reads of ASV in the sample
+      if (reads>0){ # if the ASV is present in the sample
+        fasta_dat_temp <- data.frame(seq_name = rep(paste(colnames(ASV_table_subset_prop[i]),"_",rownames(ASV_table_subset_prop[j,]), sep = ""), reads), # paste the sample name and ASV name
+                                     sequence = rep(ND2_seqs[ND2_seqs$seq_name==rownames(ASV_table_subset_prop[j,]),]$sequence, reads)) # paste the ASV sequence
+        fasta_dat <- rbind(fasta_dat, fasta_dat_temp)
+      }
+    }
+  }
+  return(fasta_dat)
+}
+
+fasta_dat <- hap_network(ASV_ND2_profiling_table, species_annnotation, "Petrochromis famula")
+write.fasta(as.list(fasta_dat$sequence), fasta_dat$seq_name, file.out="/Users/kbja10/Downloads/fasta_dat.fa", nbchar = 600, as.string = TRUE)
+
+x <- read.dna("/Users/kbja10/Downloads/fasta_dat.fa", format="fasta")
+h <- haplotype(x)
+net <- haploNet(h)
+plot(net, size = attr(net,"freq"), scale.ratio=500, labels = FALSE)
+o <- replot() # interactive -- drag nodes around
+plot(net, size = attr(net,"freq"), scale.ratio=500, labels = FALSE)
+replot(o) # not interactive
+
+# Plot colored by site
+R <- haploFreq(x, fac=as.factor(region$V1))
+cols <- brewer.pal(8, "Dark2")
+plot(net, size = attr(net,"freq"), pie=R, bg=cols, scale.ratio=200, fast=TRUE)
+legend("bottomleft", c("North", "South"), text.col=cols, bty="n")
+title(main=expression(italic("Petrochromus famula")))
+

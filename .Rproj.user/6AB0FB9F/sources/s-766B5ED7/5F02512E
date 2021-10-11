@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1611868672826.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3145118505",
+    "id" : "5F02512E",
+    "lastKnownWriteTime" : 1611960765,
+    "last_content_update" : 1611960765155,
+    "path" : "~/Github/Oneida_metabarcoding/scripts/Oneida_presence_absence_comparisons.R",
+    "project_path" : "scripts/Oneida_presence_absence_comparisons.R",
+    "properties" : {
+        "cursorPosition" : "40,102",
+        "scrollLine" : "36",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

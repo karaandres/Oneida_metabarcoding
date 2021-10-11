@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1611872902568.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "FEFEB1F4",
+    "lastKnownWriteTime" : 1599062952,
+    "last_content_update" : 1599062952,
+    "path" : "~/Documents/Cornell/Research/Oneida/Data_analysis/Archive/eDNA_analysis_3.31.2020.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "218,21",
+        "scrollLine" : "184"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
