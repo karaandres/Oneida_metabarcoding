@@ -283,22 +283,23 @@ front_gillnet <- pareto(x, y, condition = idCombs(keep = 4))
 front_seine <- pareto(x, y, condition = idCombs(keep = 5))
 
 # PLOT 1(A): the Pareto frontiers both for all gears and for all traditional (non-eDNA) gears are potted alongside species accumulation curves for each gear independently.
-pal <- brewer.pal(8, "Set2")
-pal <- brewer.pal(8, "Set2")
+cols <- c(brewer.pal(8, "Dark2"),"#386CB0")
+my.cols <- cols[c(8,4,9,1,6,3,2)]
+
 plot(front_all$front, xlim = c(0, effort_max), ylim = c(0, max(y)),
-     pch = 1, col = pal[1], type = "b",
+     pch = 1, col = my.cols[1], type = "b", lwd = 1,
      xlab = "Effort (work hours)", ylab = "Expected number of species detected",
      main = "Pareto frontiers for combined-method surveys")
-points(front_eDNA$front, pch = 16, col = pal[2], type = "b")
-points(front_ef$front, pch = 16, col = pal[3], type = "b")
-points(front_seine$front, pch = 16, col = pal[4], type = "b")
-points(front_fyke$front, pch = 16, col = pal[5], type = "b")
-points(front_gillnet$front, pch = 16, col = pal[6], type = "b")
-points(front_trad$front, pch = 1, col = pal[7], type = "b")
+points(front_eDNA$front, pch = 16, col = my.cols[2], lwd = 2, type = "b")
+points(front_ef$front, pch = 16, col = my.cols[3], lwd = 2, type = "b")
+points(front_seine$front, pch = 16, col = my.cols[4], lwd = 2, type = "b")
+points(front_fyke$front, pch = 16, col = my.cols[5], lwd = 2, type = "b")
+points(front_gillnet$front, pch = 16, col = my.cols[6], lwd = 2, type = "b")
+points(front_trad$front, pch = 1, col = my.cols[7], lwd = 1, type = "b")
 
 legend("topleft", legend = c("eDNA", "Electrofishing", "Seine", "Fyke", "Gillnet", "Combined traditional", "Combined eDNA and traditional"),
        pch = c(rep(16,5),1,1),
-       col = pal[c(2:7,1)], cex = 0.7)
+       col = my.cols[c(2:7,1)], cex = 0.7)
 
 
 
@@ -309,22 +310,23 @@ hull_all <- conv_hull(front_all)
 hull_trad <- conv_hull(front_trad)
 
 # PLOT 1(B): the convex hulls of Pareto frontiers -- otherwise same as the last plot
-pal <- brewer.pal(8, "Set2")
+cols <- c(brewer.pal(8, "Dark2"),"#386CB0")
+my.cols <- cols[c(8,4,9,1,6,3,2)]
 pdf(here("figures","convex_Pareto.pdf"), width = 8, height = 6)
 plot(hull_all$hull, xlim = c(0, effort_max), ylim = c(0, max(y)),
-     pch = 1, col = pal[1], type = "b",
+     pch = 1, col = my.cols[1], type = "b", lwd = 1,
      xlab = "Effort (work hours)", ylab = "Expected number of species detected",
      main = "Pareto frontiers for combined-method surveys")
-points(front_eDNA$front, pch = 16, col = pal[2], type = "b")
-points(front_ef$front, pch = 16, col = pal[3], type = "b")
-points(front_seine$front, pch = 16, col = pal[4], type = "b")
-points(front_fyke$front, pch = 16, col = pal[5], type = "b")
-points(front_gillnet$front, pch = 16, col = pal[6], type = "b")
-points(hull_trad$hull, pch = 1, col = pal[7], type = "b")
+points(front_eDNA$front, pch = 16, col = my.cols[2], lwd = 2, type = "b")
+points(front_ef$front, pch = 16, col = my.cols[3], lwd = 2, type = "b")
+points(front_seine$front, pch = 16, col = my.cols[4], lwd = 2, type = "b")
+points(front_fyke$front, pch = 16, col = my.cols[5], lwd = 2, type = "b")
+points(front_gillnet$front, pch = 16, col = my.cols[6], lwd = 2, type = "b")
+points(hull_trad$hull, pch = 1, col = my.cols[7], lwd = 1, type = "b")
 
 legend("topleft", legend = c("eDNA", "Electrofishing", "Seine", "Fyke", "Gillnet", "Combined traditional", "Combined eDNA and traditional"),
        pch = c(rep(16,5),1,1),
-       col = pal[c(2:7,1)], cex = 0.7)
+       col = my.cols[c(2:7,1)], cex = 0.7)
 
 dev.off()
 
@@ -343,7 +345,7 @@ library(ggplot2)
 ##     pareto_front
 ##     gears: vector of gears to include (e.g., leave out eDNA if doing a traditional gear analysis)
 
-stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet","seine")) {
+stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet","seine"), cols=cols) {
   
   # Calculate an effort-by-gear matrix in wide format (object effort_mat)
   effort_mat <- matrix(data = NA, nrow = n_combs, ncol = n_gears)
@@ -362,7 +364,7 @@ stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet
   
   # Subset to gear combinations on the Pareto front
   effort_df <- effort_df[pareto_front[["indices"]],]
-  names(effort_df)[names(effort_df) == "ef"] <- "electrofishing" # rename "ef" as "electrofishing" (for legend)
+  names(effort_df)[names(effort_df) == "ef"] <- "Electrofishing" # rename "ef" as "electrofishing" (for legend)
   
   # Convert into long format (three columns: total effort, effort, and method)
   effort_mat_long <- melt(effort_df, id.vars = "Tot_effort")
@@ -370,7 +372,8 @@ stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet
   
   # Make a stacked area plot
   ggplot(effort_mat_long, aes(x = Tot_effort, y = Effort, fill = Gear)) +
-    geom_area() +
+    geom_area() + 
+    scale_fill_manual(values = cols) +
     xlab("Total effort (work hours)") + ylab("Optimal gear combination (work hours)")
   # TO DO: remove eDNA legend box from traditional samples plot.
   
@@ -378,17 +381,19 @@ stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet
 
 
 # Stacked area plots for Pareto fronts
-stacked_area_plot(pareto_front = front_all)
-stacked_area_plot(pareto_front = front_trad)
+cols <- c(brewer.pal(8, "Dark2"),"#386CB0")
+my.cols <- cols[c(4,9,1,6,3,2)]
+stacked_area_plot(pareto_front = front_all, cols=my.cols)
+stacked_area_plot(pareto_front = front_trad, cols=my.cols)
 
 # Stacked area plots for convex hulls of Pareto fronts
 # (optimal gear allocation vs. total effort is smoother, but still some noise for reasons described below)
-stacked_area_plot(pareto_front = hull_all)
-stacked_area_plot(pareto_front = hull_trad, gears = c("ef","fyke","gillnet","seine"))
+stacked_area_plot(pareto_front = hull_all, cols=my.cols)
+stacked_area_plot(pareto_front = hull_trad, gears = c("ef","fyke","gillnet","seine"), cols=my.cols)
 
 ## SAVED FIGURE -- for all gears, with convex hull of Pareto front ##
 pdf(here("figures","stackedAreaPlot_convexPareto_allGears.pdf"), width = 5, height = 5)
-stacked_area_plot(pareto_front = hull_all)
+stacked_area_plot(pareto_front = hull_all, cols=my.cols)
 dev.off()
 
 
