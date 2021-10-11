@@ -48,9 +48,18 @@ fyke_dat$Method <- "fyke"
 gillnet_dat$Method <- "gillnet"
 seine_dat$Method <- "seine"
 
+# Read in species names (used as a common-to-scientific name look-up table)
+all_methods_presence <- read.csv(here("datasets", "all_methods_presence.csv"))
+spp_name_table <- all_methods_presence[,c("Scientific.name","Common.name")]
+rm(all_methods_presence)
+
 # Combine all data into a single data frame
 dat <- bind_rows(eDNA_dat, ef_dat, fyke_dat, gillnet_dat, seine_dat)
 dat[is.na(dat)] <- 0 # count for species not detected by a method is 0
+
+# USER CHOICE: Restrict to species-level assignments
+# Comment out this line if genus-level assignments are to be included
+dat <- dat[,colnames(dat)[!grepl(pattern = "[.]sp[.]", colnames(dat))]]
 
 dat_by_method <- split(dat, dat$Method) # split dat data frame into a list by gear
 rm(eDNA_dat, ef_dat, fyke_dat, gillnet_dat, seine_dat) # clean up the workspace
@@ -70,7 +79,7 @@ effort_per_sample <- c(eDNA = 3.8, ef = 2.5, fyke = 10.5, gillnet = 12.5, seine 
 
 # TO DO -- DECISIONS: Should we combine the two 15-minute all-fish electrofishing surveys into a single sample? Note that smaller-effort samples are favored by this algorithm since it's assumed all samples are taken from random locations, so 2 15-minute electrofishing samples may cover much more territory than a single combined 30-minute effort. Questions: Are travel costs--especially between small samples--accurately represented? In real life, are there ways to adjust the "size"/"effort" of a single sample for some/all gear types? If so, this is a separate decision variable that could be optimized.
 
-effort_max <- 60 # maximum effort
+effort_max <- 100 # maximum effort
 
 
 ## Warnings:
@@ -312,11 +321,12 @@ hull_trad <- conv_hull(front_trad)
 # PLOT 1(B): the convex hulls of Pareto frontiers -- otherwise same as the last plot
 cols <- c(brewer.pal(8, "Dark2"),"#386CB0")
 my.cols <- cols[c(8,4,9,1,6,3,2)]
+
 pdf(here("figures","convex_Pareto.pdf"), width = 8, height = 6)
 plot(hull_all$hull, xlim = c(0, effort_max), ylim = c(0, max(y)),
      pch = 1, col = my.cols[1], type = "b", lwd = 1,
-     xlab = "Effort (work hours)", ylab = "Expected number of species detected",
-     main = "Pareto frontiers for combined-method surveys")
+     xlab = "Effort (work hours)", 
+     ylab = "Expected number of species detected")
 points(front_eDNA$front, pch = 16, col = my.cols[2], lwd = 2, type = "b")
 points(front_ef$front, pch = 16, col = my.cols[3], lwd = 2, type = "b")
 points(front_seine$front, pch = 16, col = my.cols[4], lwd = 2, type = "b")
@@ -365,6 +375,9 @@ stacked_area_plot = function(pareto_front, gears = c("eDNA","ef","fyke","gillnet
   # Subset to gear combinations on the Pareto front
   effort_df <- effort_df[pareto_front[["indices"]],]
   names(effort_df)[names(effort_df) == "ef"] <- "Electrofishing" # rename "ef" as "electrofishing" (for legend)
+  names(effort_df)[names(effort_df) == "fyke"] <- "Fyke" # rename "ef" as "electrofishing" (for legend)
+  names(effort_df)[names(effort_df) == "gillnet"] <- "Gillnet" # rename "ef" as "electrofishing" (for legend)
+  names(effort_df)[names(effort_df) == "seine"] <- "Seine" # rename "ef" as "electrofishing" (for legend)
   
   # Convert into long format (three columns: total effort, effort, and method)
   effort_mat_long <- melt(effort_df, id.vars = "Tot_effort")
@@ -392,7 +405,7 @@ stacked_area_plot(pareto_front = hull_all, cols=my.cols)
 stacked_area_plot(pareto_front = hull_trad, gears = c("ef","fyke","gillnet","seine"), cols=my.cols)
 
 ## SAVED FIGURE -- for all gears, with convex hull of Pareto front ##
-pdf(here("figures","stackedAreaPlot_convexPareto_allGears.pdf"), width = 5, height = 5)
+pdf(here("figures","stackedAreaPlot_convexPareto_allGears.pdf"), width = 6, height = 4)
 stacked_area_plot(pareto_front = hull_all, cols=my.cols)
 dev.off()
 
@@ -408,20 +421,37 @@ detect_frac <- n/matrix(n_spls, nrow = n_spp, ncol = n_gears, byrow = TRUE)
 max_detect_frac <- sapply(1:nrow(detect_frac), function(x) {max(detect_frac[x,])})
 detect_frac_of_max <- detect_frac / max_detect_frac # normalized between 0 and 1 for each species, where 1 is achieved for the gear(s) attaining the max_detect_frac for that species
 
+# Define function to replace common names with scientific names
+replace_names <- function(i) {
+  com_name <- gsub("[.]", " ", spp_names[i]); com_name <- gsub(" sp ", " sp.", com_name)
+  if(com_name %in% spp_name_table$Common.name) {
+    sci_name <- spp_name_table$Scientific.name[which(spp_name_table$Common.name == com_name)]
+  } else {
+    sci_name <- com_name
+  }
+  return(sci_name)
+}
+
+# Find scientific species names
+spp_sci_names <- sapply(1:length(spp_names), function(x) replace_names(x))
+
+# Define function to italicize character vectors
+make.italic <- function(x) as.expression(lapply(x, function(y) bquote(italic(.(y)))))
+
+
 ## Plot and save to pdf
 pdf(here("figures","gear_bias_heatmap.pdf"), width = 10, height = 8)
 
 colMain <- colorRampPalette(brewer.pal(8, "Reds"))(50)
 colSide <- colorRampPalette(brewer.pal(8, "Blues"))(50)
 heatmap(detect_frac_of_max, 
-        main = "Gear detection biases",
         labCol = c("eDNA", "Electrofishing", "Fyke", "Gillnet", "Seine"),
         Colv = NA,
         distfun = function(x) {dist(x, method = "manhattan")},
         scale = "none",
         margins = c(7,21),
         cexRow = 0.9,  cexCol = 1.15,
-        labRow = gsub("[.]", " ", spp_names),
+        labRow = make.italic(spp_sci_names), # Alternatively: gsub("[.]", " ", spp_names)        
         col = colMain, # ... passed to image()
         RowSideColors = colSide[findInterval(max_detect_frac, vec = seq(0, 1, length.out = 51), rightmost.closed = TRUE)] # UNDER CONSTRUCTION!
         )
@@ -430,12 +460,12 @@ coords <- strip.legend(xy = "topright",
                        legend = "    ",  #legend = seq(0,1,by=0.02), 
                        col = colSide, legendtype = c("breaks", "intervals", "other")[1],
              height = 0.25,
-             title = "Maximum detection fraction", text.cex = 0.7)
+             title = "Maximum detection", text.cex = 0.7)
 text(x = coords[2], y = coords[3:4]+c(-0.005,0), labels = c("1","0"), pos = 4, cex = 0.6)
 
 coords <- strip.legend(xy = "bottomright", legend = "    ", col = colMain, legendtype = c("breaks", "intervals", "other")[1],
              height = 0.25,
-             title = "Relative detection fraction", text.cex = 0.7)
+             title = "Relative detection", text.cex = 0.7)
 text(x = coords[2], y = coords[3:4]+c(-0.005,0), labels = c("Max", "0"), pos = 4, cex = 0.6)
 
 dev.off()
