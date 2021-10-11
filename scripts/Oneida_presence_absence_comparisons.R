@@ -3,6 +3,9 @@
 ### historical records, and eDNA metabarcoding datasets 
 ### Created by K. Andres and T. Lambert
 
+rm(list = ls())
+
+# Load datasets
 historical_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/oneida_historical_species_list.csv", header = TRUE)
 eDNA_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/eDNA_dat.csv", header = TRUE)
 ef_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/ef_dat.csv", header = TRUE)
@@ -24,9 +27,9 @@ library(ggplot2)
 
 cols <- c(brewer.pal(8, "Dark2"),"#386CB0","black")
 my.cols <- cols[c(10,4,9,1,6,3)]
-# pdf("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/sp_lists_overlap.pdf", width=10, height=7) 
+# pdf("Figures/sp_lists_overlap.pdf", width=10, height=7) 
 sp_lists_overlap <- upset(all_methods_presence, nsets = 6, sets.bar.color = my.cols, order.by = "freq",
-                          mainbar.y.label = "Number of overlapping species", text.scale=c(1.7, 1.5, 1.2,1.5,1.5,1.5),
+                          mainbar.y.label = "Number of species", text.scale=c(1.7, 1.5, 1.2,1.5,1.5,1.5),
                           sets.x.label = "Number of species per dataset")
 sp_lists_overlap
 # dev.off()
@@ -130,13 +133,13 @@ sp_occurrence_plot <- ggplot(sp_occurrence, aes(x=traditional, y=edna, color=hab
   scale_color_manual(name="Habitat type",values=as.vector(stepped(14)[c(9,14)]))
 sp_occurrence_plot
 
-# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/sp_occurrence.pdf", plot = sp_occurrence_plot, dpi=600, width=9, height=4,units="in")
+# ggsave("Figures/sp_occurrence.pdf", plot = sp_occurrence_plot, dpi=600, width=9, height=4,units="in")
 # ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/sp_occurrence.png", plot = sp_occurrence_plot, dpi=600, width=9, height=4,units="in")
 
 ###############################################################################################
 ################ Part 3: Species relative proportion analyses #################################
 ###############################################################################################
-
+library(tidyr)
 all_methods_prop <- data.frame(species=all_methods_abundance$species,
                                lapply(all_methods_abundance[,3:7], function(x) x / sum(x)))
 all_methods_prop <- as.data.frame(all_methods_prop %>%
@@ -147,7 +150,23 @@ top_spp <- all_methods_prop %>%
   arrange(desc(prop)) %>% 
   group_by(gear) %>% slice(1:8)
 
+# Define function to replace common names with scientific names
+# Read in species names (used as a common-to-scientific name look-up table)
+spp_name_table <- all_methods_presence[,c("Scientific.name","Common.name")]
+
+replace_names <- function(i) {
+  com_name <- gsub("[.]", " ", i)
+  com_name <- gsub(" sp ", " sp.", com_name)
+  if(com_name %in% spp_name_table$Common.name) {
+    sci_name <- spp_name_table$Scientific.name[match(com_name, spp_name_table$Common.name)]
+  } else {
+    sci_name <- com_name
+  }
+  return(sci_name)
+}
+unique(top_spp$species)
 # Stacked barplot of relative proportion (counts or reads) for top 8 species per dataset
+top_spp$species <- replace_names(top_spp$species)
 species_proportions <- ggplot(top_spp, aes(fill=species, y=prop, x=gear)) + 
   geom_bar(position="stack", stat="identity") +
   scale_fill_manual(values=as.vector(stepped(21))) +
@@ -157,7 +176,7 @@ species_proportions <- ggplot(top_spp, aes(fill=species, y=prop, x=gear)) +
   theme_bw()
 species_proportions
 
-# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/all_methods_species_proportion.pdf", plot = species_proportions, dpi=600)
+# ggsave("Figures/all_methods_species_proportion.pdf", plot = species_proportions, dpi=600)
 # ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/all_methods_species_proportion_xcarp.png", plot = species_proportions, dpi=600)
 
 ###############################################################################################
@@ -240,7 +259,7 @@ nmds_traditional
 nmds_plot <- ggarrange(nmds_edna, nmds_traditional, labels = c("(A)", "(B)"),ncol = 2, nrow = 1)
 nmds_plot
 
-# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/nmds_plot.pdf", plot = nmds_plot, dpi=600, width=12, height=7,units="in")
+# ggsave("Figures/nmds_plot.pdf", plot = nmds_plot, dpi=600, width=12, height=7,units="in")
 # ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/nmds_plot.png", plot = nmds_plot, dpi=600, width=12, height=7,units="in")
 
 ###############################################################################################
@@ -285,13 +304,13 @@ site_comparison <- data.frame(Transect=rep(rownames(site_comparison_edna),2),
                               Richness=c(site_comparison_edna$Richness,site_comparison_ef$Richness))
 
 site_richness <- ggplot(site_comparison, aes(fill=Sample, y=Richness, x=Transect)) + 
-  geom_bar(position="stack", stat="identity") +
+  geom_bar(position="dodge", stat="identity", width = 0.65) +
   xlab("Transect") + ylab("Species richness") +
   theme_bw() +
   theme(text = element_text(size=15)) +
   scale_fill_manual(name="Sampling method",labels=c("eDNA","Electrofishing"),values=my.cols[c(2:3)])
 site_richness
-# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/site_richness.pdf", plot = site_richness, dpi=600)
+# ggsave("Figures/site_richness.pdf", plot = site_richness, dpi=600)
 # ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/site_richness.png", plot = site_richness, dpi=600)
 
 # Correlation in relative abundance per site: eDNA vs. ef
@@ -300,14 +319,13 @@ edna_props[is.na(edna_props)] <- 0
 
 ef_props <- as.data.frame(lapply(site_comparison_ef, function(x) x / sum(x)))
 ef_props[is.na(ef_props)] <- 0
-
 c.coeffs <- sapply(1:(ncol(edna_props)-1), FUN = function(x) cor(edna_props[,x], ef_props[,x], method="kendall"))
 p.vals <- sapply(1:(ncol(edna_props)-1), FUN = function(x) cor.test(edna_props[,x], ef_props[,x], method="kendall")$p.value)
 df <- data.frame(Species = colnames(edna_props[,-(ncol(edna_props))]), Correlation = c.coeffs, p.vals=p.vals)
-df[order(df$Correlation, decreasing = TRUE),]
+df <- df[order(df$Correlation, decreasing = TRUE),]
 df <- df[!is.na(df$Correlation),]
 nrow(df)
-nrow(df[df$p.vals<0.05,])
+df$signif <- ifelse(((df$p.vals<=0.05)),1,0)
 summary(df$Correlation, na.rm = TRUE)
 
 sp_correlation <- ggplot(df, aes(x=Correlation)) + geom_histogram(bins=10,binwidth = 0.2) +
@@ -317,3 +335,12 @@ sp_correlation <- ggplot(df, aes(x=Correlation)) + geom_histogram(bins=10,binwid
 sp_correlation
 # ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/sp_correlation.png", plot = sp_correlation, dpi=600, width=9, height=4,units="in")
 
+df$Species <- replace_names(df$Species)
+sp_correlation <- ggplot(df, aes(x=reorder(Species,Correlation), y=Correlation, group=signif)) +
+  geom_point(aes(shape=as.factor(signif), size = 1.3)) +
+  scale_shape_manual(values=c(16,8)) +
+  coord_flip() + labs(y="Rank correlation (Kendall's tau)",x="") +
+  theme_bw() +
+  theme(legend.position = "none")
+sp_correlation
+ggsave("Figures/site_corr_coeffs.pdf", plot = sp_correlation, dpi=600)
