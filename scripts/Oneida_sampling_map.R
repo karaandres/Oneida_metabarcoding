@@ -41,8 +41,7 @@ oneida_lake_map <- ggmap(oneida_lake) +
   scale_shape_manual(name="Sampling method",labels=c("eDNA","Electrofishing", "Fyke net", "Gill net", "Seine net"),values=c(17,5,3,16,6)) +
   geom_point(aes(x=-76, y=43.25), colour="black", shape=8, size=3) +
   geom_line(data=ef_dat, aes(x=long, y=lat, group=Description), color="white", size=0.5) +
-  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank(),
-      rect = element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank()) +
+  theme(rect = element_blank()) + ylab("Latitude") + xlab("Longitude") +
   ggsn::scalebar(location = "bottomleft", x.min = -76.13, x.max = -75.7, 
            y.min = 43.145, y.max = 43.25, 
            dist = 5, dist_unit="km", transform = TRUE, 
@@ -56,10 +55,77 @@ region_map <- ggplot() + geom_polygon(data=map_data("state"), aes(x=long, y=lat,
   geom_rect(aes(xmin=-76.2, xmax=-75.67, ymin=43.05, ymax=43.4),fill = "transparent", color = "red", size = 0.5) +
   theme_map() + theme(panel.background = element_rect(fill = "white"))
 
-
 inset_map <- ggdraw() + draw_plot(oneida_lake_map) +
   draw_plot(region_map, x = 0.597, y = 0.57, width = 0.26, height = 0.26)
 inset_map
-
 # ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/oneida_lake_map.pdf", plot = inset_map, dpi=600)
-# ggsave("/Users/kbja10/Github/Oneida_metabarcoding/markdown_images/oneida_lake_map.png", plot = inset_map, dpi=600)
+
+### Maps of species-specific eDNA read counts
+eDNA_read_counts <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/eDNA_dat.csv", header = TRUE)
+eDNA_read_counts <- eDNA_read_counts[!grepl("Y", eDNA_read_counts$Site),] # remove subsamples (labeled with "Y")
+
+# Lake sturgeon
+sturgeon <- select(eDNA_read_counts, Site, lake.sturgeon)
+sturgeon <- data.frame(eDNA_sampling_points,
+                       site=eDNA_read_counts$Site, 
+                       sturgeon=eDNA_read_counts$lake.sturgeon/sum(eDNA_read_counts$lake.sturgeon))
+sturgeon[sturgeon==0] <- NA # so sites with zero reads are not plotted
+# Plot map of sites where sturgeon is detected in eDNA, with point size equal to
+# the relative read count across all sites
+sturgeon_map <- ggmap(oneida_lake) +
+  geom_point(data=sturgeon, mapping=aes(x=long, y=lat, size=sturgeon)) +
+  geom_point(aes(x=-76, y=43.25), colour="black", shape=8, size=3) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank(),
+        rect = element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank()) +
+  theme(legend.position="none") +
+  ggsn::scalebar(location = "bottomleft", x.min = -76.13, x.max = -75.7, 
+                 y.min = 43.145, y.max = 43.25, 
+                 dist = 5, dist_unit="km", transform = TRUE, 
+                 model = "WGS84", height = 0.05, 
+                 st.dist = 0.05, st.bottom=FALSE)
+sturgeon_map
+ggsave("Figures/sturgeon_map.pdf", plot = sturgeon_map, dpi=600)
+
+# Walleye
+walleye <- select(eDNA_read_counts, Site, walleye)
+walleye <- data.frame(eDNA_sampling_points,
+                       site=eDNA_read_counts$Site, 
+                      walleye=eDNA_read_counts$walleye/sum(eDNA_read_counts$walleye))
+walleye[walleye==0] <- NA # so sites with zero reads are not plotted
+# Plot map of sites where sturgeon is detected in eDNA, with point size equal to
+# the relative read count across all sites
+walleye_map <- ggmap(oneida_lake) +
+  geom_point(data=walleye, mapping=aes(x=long, y=lat, size=walleye)) +
+  geom_point(aes(x=-76, y=43.25), colour="black", shape=8, size=3) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank(),
+        rect = element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank()) +
+  theme(legend.position="none") +
+  ggsn::scalebar(location = "bottomleft", x.min = -76.13, x.max = -75.7, 
+                 y.min = 43.145, y.max = 43.25, 
+                 dist = 5, dist_unit="km", transform = TRUE, 
+                 model = "WGS84", height = 0.05, 
+                 st.dist = 0.05, st.bottom=FALSE)
+walleye_map
+# ggsave("Figures/walleye_map.pdf", plot = walleye_map, dpi=600)
+
+# Bowfin
+bowfin <- select(eDNA_read_counts, Site, bowfin)
+bowfin <- data.frame(eDNA_sampling_points,
+                      site=eDNA_read_counts$Site, 
+                     bowfin=eDNA_read_counts$bowfin/sum(eDNA_read_counts$bowfin))
+bowfin[bowfin==0] <- NA # so sites with zero reads are not plotted
+# Plot map of sites where sturgeon is detected in eDNA, with point size equal to
+# the relative read count across all sites
+bowfin_map <- ggmap(oneida_lake) +
+  geom_point(data=bowfin, mapping=aes(x=long, y=lat, size=bowfin)) +
+  geom_point(aes(x=-76, y=43.25), colour="black", shape=8, size=3) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank(),
+        rect = element_blank(), axis.title.y=element_blank(), axis.title.x=element_blank()) +
+  theme(legend.position="none") +
+  ggsn::scalebar(location = "bottomleft", x.min = -76.13, x.max = -75.7, 
+                 y.min = 43.145, y.max = 43.25, 
+                 dist = 5, dist_unit="km", transform = TRUE, 
+                 model = "WGS84", height = 0.05, 
+                 st.dist = 0.05, st.bottom=FALSE)
+bowfin_map
+# ggsave("Figures/bowfin_map.pdf", plot = bowfin_map, dpi=600)
