@@ -31,15 +31,14 @@ lakes <- lakes[complete.cases(lakes$name), ]
 great_lakes_map <- subset(lakes, name==c("Lake Ontario","Lake Erie"))
 oneida_map <- subset(lakes, name=="Oneida Lake")
 
-mapbox <- c(-76.14, 43.14, -75.7, 43.3) # specify map boundaries
+mapbox <- c(-76.16, 43.14, -75.69, 43.33) # specify map boundaries
 oneida_lake <- get_map(location = mapbox, source = "stamen", maptype = "terrain", zoom = 13)
 cols <- c(brewer.pal(8, "Dark2"),"#386CB0")
 
 oneida_lake_map <- ggmap(oneida_lake) +
   geom_point(data=all_sampling_points, mapping=aes(x=long, y=lat, color=gear, shape=gear), size=3, stroke = 1.2) +
-  scale_color_manual(name="Sampling method",labels=c("eDNA","Electrofishing", "Fyke net", "Gill net", "Seine net"),values=cols[c(4,9,6,3,1)]) +
-  scale_shape_manual(name="Sampling method",labels=c("eDNA","Electrofishing", "Fyke net", "Gill net", "Seine net"),values=c(17,5,3,16,6)) +
-  geom_point(aes(x=-76, y=43.25), colour="black", shape=8, size=3) +
+  scale_color_manual(name="Gear type",labels=c("eDNA","Electrofishing", "Fyke net", "Gill net", "Seine net"),values=cols[c(4,9,6,3,1)]) +
+  scale_shape_manual(name="Gear type",labels=c("eDNA","Electrofishing", "Fyke net", "Gill net", "Seine net"),values=c(17,5,3,16,6)) +
   geom_line(data=ef_dat, aes(x=long, y=lat, group=Description), color="white", size=0.5) +
   theme(rect = element_blank()) + ylab("Latitude") + xlab("Longitude") +
   ggsn::scalebar(location = "bottomleft", x.min = -76.13, x.max = -75.7, 
@@ -58,7 +57,8 @@ region_map <- ggplot() + geom_polygon(data=map_data("state"), aes(x=long, y=lat,
 inset_map <- ggdraw() + draw_plot(oneida_lake_map) +
   draw_plot(region_map, x = 0.597, y = 0.57, width = 0.26, height = 0.26)
 inset_map
-# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Figures/oneida_lake_map.pdf", plot = inset_map, dpi=600)
+# ggsave("/Users/kbja10/Documents/Cornell/Research/Oneida/Drafts/Figures_Tables/Fig_1_oneida_lake_map.pdf", plot = inset_map, dpi=600)
+# Open in adobe and move inset, scale bar, add blue square over oneida lake label
 
 ### Maps of species-specific eDNA read counts
 eDNA_read_counts <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/eDNA_dat.csv", header = TRUE)

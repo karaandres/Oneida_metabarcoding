@@ -4,6 +4,7 @@
 ### Outputs are community datasets (vegan) for each site as well as lake-wide 
 ### Created by K. Andres
 
+rm(list = ls())
 historical_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/oneida_historical_species_list.csv", header = TRUE)
 sp_read_count_by_site <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/sp_read_count_by_site.csv")
 ef_dat <- read.csv("/Users/kbja10/Github/Oneida_metabarcoding/datasets/Oneida_2017_comm_dataset.csv")
@@ -31,7 +32,7 @@ colnames(eDNA_dat) <- sp_read_count_by_site$scomnames
 eDNA_dat <- data.frame(Site=rownames(eDNA_dat),eDNA_dat)
 # Standardize each row (sample) to 100 individuals (account for differences in sequencing depth among samples)
 eDNA_dat <- data.frame(Site=eDNA_dat$Site, eDNA_dat[,-1]/rowSums(eDNA_dat[,-1])*100)
-write.csv(eDNA_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/eDNA_dat.csv", row.names=FALSE)
+# write.csv(eDNA_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/eDNA_dat.csv", row.names=FALSE)
 
 # Electrofishing dataset
 to_replace <- c("chubsucker","gizzard.shad","killifish","lepomis","pumpkinseedXgreen.sunfish","redhorse","unknown.shiner")
@@ -39,12 +40,10 @@ replace_with <- c("creek.chubsucker","American.gizzard.shad","banded.killifish",
 names(replace_with) <- to_replace
 colnames(ef_dat) <- str_replace_all(colnames(ef_dat), replace_with)
 ef_dat <- ef_dat %>% mutate(Lepomis.sp.=Lepomis.1+Lepomis.2, .keep = "unused")
-# Collapse reads/species counts by site (multiple EF passes)
+# Keep only all-species runs (exclude predator-only runs)
+ef_dat <- ef_dat[!grepl(" 2", ef_dat$Site),] # remove run 2 from each site
 ef_dat$Site <- gsub(" [[:digit:]]+", "", ef_dat$Site) # remove pass number 
-# ef_dat <- as.data.frame(ef_dat %>% 
-#                                 group_by(Site) %>% 
-#                                 summarise(across(where(is.numeric), sum)))
-write.csv(ef_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/ef_dat.csv", row.names=FALSE)
+# write.csv(ef_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/ef_dat.csv", row.names=FALSE)
 
 # Fyke dataset
 fyke_dat <- fyke_dat %>% 
@@ -63,14 +62,10 @@ fyke_dat$bluntnose.minnow <- c(rep(0,7),1,0,0,0,1,0,0,0,0,0,2,rep(0,13),2,0,0,0,
 fyke_dat$creek.chubsucker <- c(rep(0,18),1,0,0,3,rep(0,14))
 fyke_dat$PSXGSF <- c(rep(0,26),1,0,1,rep(0,7))
 fyke_dat <- fyke_dat %>% mutate(Lepomis.sp.=PSXGSF+Lepomis.YOY, .keep = "unused")
-# Collapse reads/species counts by site (multiple fyke nets per site)
-# fyke_dat <- as.data.frame(fyke_dat %>% 
-#                           group_by(Site) %>% 
-#                           summarise(across(where(is.numeric), sum)))
 # Drop columns (species) with no occurrences
 cols_to_drop = c(TRUE, colSums(fyke_dat[,-1]) > 0)
 fyke_dat <- fyke_dat[,cols_to_drop]
-write.csv(fyke_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/fyke_dat.csv", row.names=FALSE)
+# write.csv(fyke_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/fyke_dat.csv", row.names=FALSE)
 
 # Gill net dataset
 to_replace <- c("gizzard.shad","redhorse.sp.","tiger.muskellunge")
@@ -82,7 +77,7 @@ gillnet_dat[is.na(gillnet_dat)] <- 0
 # Drop columns (species) with no occurrences
 cols_to_drop = c(TRUE, colSums(gillnet_dat[,-1]) > 0)
 gillnet_dat <- gillnet_dat[,cols_to_drop]
-write.csv(gillnet_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/gillnet_dat.csv", row.names=FALSE)
+# write.csv(gillnet_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/gillnet_dat.csv", row.names=FALSE)
 
 # Seine dataset
 to_replace <- c(" ","gizzard.shad","shiner.sp.","lepomis.sp.")
@@ -92,8 +87,7 @@ seine_dat$Species <- str_replace_all(seine_dat$Species, replace_with)
 seine_dat <- as.data.frame(seine_dat %>% pivot_wider(names_from = Species, values_from = Number.Caught) %>%
                              group_by(Site) %>%
                              summarise(across(bluegill:chain.pickerel, sum, na.rm = TRUE)))
-# sites were re-sampled monthly so don't combine by site
-write.csv(seine_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/seine_dat.csv", row.names=FALSE)
+# write.csv(seine_dat, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/seine_dat.csv", row.names=FALSE)
 
 
 #########################################################################
@@ -112,28 +106,28 @@ ef_totals <- data.frame(species = colnames(ef_dat[,-1]),
                         number = colSums(ef_dat[,-1]))
 ef_totals <- ef_totals[ef_totals$number > 0, ]
 ef_totals <- ef_totals[order(ef_totals$species),]
-ef_totals$gear <- rep("ef",nrow(ef_totals))
+ef_totals$gear <- rep("Electrofishing",nrow(ef_totals))
 
 # Fyke species totals
 fyke_totals <- data.frame(species = colnames(fyke_dat[,-1]),
                           number = colSums(fyke_dat[,-1]))
 fyke_totals <- fyke_totals[fyke_totals$number > 0, ]
 fyke_totals <- fyke_totals[order(fyke_totals$species),]
-fyke_totals$gear <- rep("fyke",nrow(fyke_totals))
+fyke_totals$gear <- rep("Fyke netting",nrow(fyke_totals))
 
 # Gillnet species totals
 gillnet_totals <- data.frame(species = colnames(gillnet_dat[,-1]),
                              number = colSums(gillnet_dat[,-1]))
 gillnet_totals <- gillnet_totals[gillnet_totals$number > 0, ]
 gillnet_totals <- gillnet_totals[order(gillnet_totals$species),]
-gillnet_totals$gear <- rep("gillnet",nrow(gillnet_totals))
+gillnet_totals$gear <- rep("Gill netting",nrow(gillnet_totals))
 
 # Seine species totals
 seine_totals <- data.frame(species = colnames(seine_dat[,-1]),
                            number = colSums(seine_dat[,-1]))
 seine_totals <- seine_totals[seine_totals$number > 0, ]
 seine_totals <- seine_totals[order(seine_totals$species),]
-seine_totals$gear <- rep("seine", nrow(seine_totals))
+seine_totals$gear <- rep("Seining", nrow(seine_totals))
 
 # All methods totals
 historical_dat$scomnames <- gsub(" ", ".", historical_dat$scomnames)
@@ -145,16 +139,15 @@ all_methods_abundance <- as.data.frame(all_methods_abundance %>%
                                       pivot_wider(names_from = gear, values_from = number))
 all_methods_abundance[is.na(all_methods_abundance)] <- 0
 all_methods_abundance <- all_methods_abundance[!grepl(".sp", all_methods_abundance$species),] # remove genus-level IDs
-write.csv(all_methods_abundance, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/all_methods_abundance.csv", row.names=FALSE)
+# write.csv(all_methods_abundance, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/all_methods_abundance.csv", row.names=FALSE)
 
 # All methods presence-absence
 all_methods_presence <- all_methods_abundance[!grepl(".sp", all_methods_abundance$species),] # remove genus-level IDs
 all_methods_presence[,2:7][all_methods_presence[,2:7]>0] <- 1 # indicate presence w/ 1
 all_methods_presence <- left_join(all_methods_presence, historical_dat[,1:2], by=c("species"="scomnames")) %>%
   select(species.y, everything()) %>%  
-  arrange(desc(historical), desc(eDNA), desc(ef), desc(fyke), desc(gillnet), desc(seine))
+  arrange(desc(all_methods_presence$historical), desc(all_methods_presence$eDNA), desc(all_methods_presence$Electrofishing), desc(all_methods_presence$`Fyke netting`), desc(all_methods_presence$`Gill netting`), desc(all_methods_presence$Seining))
 all_methods_presence$species <- gsub("\\.", " ", all_methods_presence$species)
 colnames(all_methods_presence) <- c("Scientific name","Common name","Historical","eDNA","Electrofishing",
-                                    "Fyke net","Gill net","Seine")
-write.csv(all_methods_presence, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/all_methods_presence.csv", row.names=FALSE)
-
+                                    "Fyke netting","Gill netting","Seining")
+# write.csv(all_methods_presence, "/Users/kbja10/Github/Oneida_metabarcoding/datasets/all_methods_presence.csv", row.names=FALSE)
